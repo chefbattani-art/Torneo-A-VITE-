@@ -263,6 +263,12 @@ if "initialized" not in st.session_state:
         st.session_state.current_round_matches = []
         st.session_state.round_number = 0
 
+if "giocatore_selezionato" not in st.session_state:
+    st.session_state.giocatore_selezionato = None
+
+if "vista_personale_attiva" not in st.session_state:
+    st.session_state.vista_personale_attiva = False
+
 def salva_snapshot():
     snapshot = {
         "players": json.loads(json.dumps(st.session_state.players)),
@@ -402,71 +408,114 @@ if is_admin:
 else:
     st.sidebar.info("Modalità Spettatore / Giocatore")
 
-# --- TITOLO PRINCIPALE ---
+# --- PAGINA INIZIALE DI ACCESSO OBBLIGATO SE NON SELEZIONATO ---
+nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
+
+if st.session_state.giocatore_selezionato is None:
+    st.title("⚽️ Benvenuto al Torneo a Vite")
+    st.markdown("""
+        <div class="info-red-box" style="text-align: center; font-size: 1.1em;">
+            👋 <b>FASE DI ACCESSO:</b> Per entrare nel torneo e visualizzare le partite, seleziona il tuo nome dall'elenco sottostante e clicca su <b>Accedi</b>.
+        </div>
+    """, unsafe_allow_html=True)
+
+    if nomi_giocatori:
+        with st.container(border=True):
+            st.markdown("### 👤 Seleziona il tuo profilo:")
+            nome_scelto_temp = st.selectbox("Iscritti:", nomi_giocatori, label_visibility="collapsed")
+            
+            col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+            with col_b2:
+                if st.button("🚀 Accedi al Torneo", type="primary", use_container_width=True):
+                    st.session_state.giocatore_selezionato = nome_scelto_temp
+                    st.rerun()
+    else:
+        st.warning("⚠️ Nessun giocatore registrato nel sistema. Chiedi all'amministratore di importare i partecipanti dal pannello di gestione.")
+        
+    # Pannello Admin accessibile anche dalla home se serve configurare/importare
+    if is_admin:
+        with st.expander("⚙️ Pannello Configurazione & Gestione (Admin)", expanded=True):
+            col_conf1, col_conf2 = st.columns(2)
+            with col_conf1:
+                st.session_state.initial_lives = st.number_input("Vite iniziali", min_value=1, max_value=10, value=st.session_state.initial_lives)
+            with col_conf2:
+                st.session_state.num_biliardini = st.number_input("Numero Biliardini", min_value=1, max_value=10, value=st.session_state.num_biliardini)
+            
+            st.markdown("---")
+            lista_input_testo = st.text_area("Incolla partecipanti (es: 1 ⚽️ Nome, 2 🥅 Nome):", height=80)
+            
+            if st.button("📥 Importa e Registra Giocatori", type="primary"):
+                righe = lista_input_testo.split("\n")
+                count_aggiunti = 0
+                for riga in righe:
+                    riga_pulita = riga.strip()
+                    if not riga_pulita: continue
+                    role = None
+                    if "🥅" in riga_pulita: role = "portiere"
+                    elif "⚽️" in riga_pulita or "⚽" in riga_pulita: role = "attaccante"
+                    
+                    if role:
+                        nome = riga_pulita.replace("🥅", "").replace("⚽️", "").replace("⚽", "")
+                        nome = re.sub(r'^\d+[\.\-\s]*', '', nome).strip()
+                        if nome and not any(p["name"].lower() == nome.lower() and p["role"] == role for p in st.session_state.players):
+                            st.session_state.players.append({
+                                "id": len(st.session_state.players) + 1,
+                                "name": nome, "role": role,
+                                "lives": st.session_state.initial_lives,
+                                "max_lives": st.session_state.initial_lives,
+                                "eliminated": False, "last_result": None
+                            })
+                            count_aggiunti += 1
+                salva_stato()
+                st.success(f"Importati {count_aggiunti} giocatori!")
+                st.rerun()
+
+            attaccanti = [p for p in st.session_state.players if p["role"] == "attaccante"]
+            portieri = [p for p in st.session_state.players if p["role"] == "portiere"]
+            st.info(f"📊 Iscritti: ⚽️ {len(attaccanti)} Attaccanti | 🥅 {len(portieri)} Portieri")
+
+            if len(st.session_state.players) >= 2:
+                if not st.session_state.tournament_started:
+                    if st.button("🚀 Avvia Torneo", type="primary"):
+                        st.session_state.tournament_started = True
+                        st.session_state.round_number = 1
+                        st.session_state.history = []
+                        st.session_state.match_history = []
+                        st.session_state.current_round_matches = genera_abbinamenti()
+                        salva_stato()
+                        st.rerun()
+                if st.button("🛑 Reset Totale"):
+                    st.session_state.tournament_started = False
+                    st.session_state.current_round_matches = []
+                    st.session_state.round_number = 0
+                    st.session_state.players = []
+                    st.session_state.history = []
+                    st.session_state.match_history = []
+                    if os.path.exists(STATE_FILE):
+                        os.remove(STATE_FILE)
+                    st.rerun()
+
+    st.stop() # Interrompe l'esecuzione finché non si effettua l'accesso
+
+# --- TITOLO PRINCIPALE TORNEO (UNA VOLTA EFFETTUATO L'ACCESSO) ---
 st.title("⚽️ Torneo a Vite")
 
-# --- GESTIONE MEMORIA PERSISTENTE NOME GIOCATORE ---
-nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
-query_params = st.query_params
-nome_url = query_params.get("giocatore", "-- Mostra Tutto --")
-
-if "giocatore_selezionato" not in st.session_state:
-    if nome_url in ["-- Mostra Tutto --"] + nomi_giocatori:
-        st.session_state.giocatore_selezionato = nome_url
-    else:
-        st.session_state.giocatore_selezionato = "-- Mostra Tutto --"
-
-if "vista_personale_attiva" not in st.session_state:
-    st.session_state.vista_personale_attiva = (query_params.get("focus", "false") == "true")
-
-# --- TENDINA INFORMATIVA ROSSA E SELEZIONE SOTTO AL TITOLO ---
-st.markdown("""
-    <div class="info-red-box">
-        ⚠️ <b>AREA GIOCATORI:</b> Seleziona il tuo nome qui sotto. Puoi usare l'icona dell'occhio <b>👁️</b> per passare istantaneamente dalla visuale dell'intero torneo alla tua partita personale! La tua preferenza rimarrà memorizzata.
-    </div>
-""", unsafe_allow_html=True)
-
-lista_scelte = ["-- Mostra Tutto --"] + nomi_giocatori
-indice_default = 0
-if st.session_state.giocatore_selezionato in lista_scelte:
-    indice_default = lista_scelte.index(st.session_state.giocatore_selezionato)
-
-if nomi_giocatori:
-    col_sel1, col_sel2 = st.columns([3, 2])
-    
-    with col_sel1:
-        giocatore_selezionato = st.selectbox(
-            "👤 Cerca il tuo nome:",
-            lista_scelte,
-            index=indice_default
-        )
-    
-    with col_sel2:
-        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        if giocatore_selezionato != "-- Mostra Tutto --":
-            etichetta_occhio = "👁️ Nascondi Vista" if st.session_state.vista_personale_attiva else "👁️ Vista Personale"
-            if st.button(etichetta_occhio, use_container_width=True):
-                st.session_state.vista_personale_attiva = not st.session_state.vista_personale_attiva
-                st.query_params["focus"] = "true" if st.session_state.vista_personale_attiva else "false"
-                st.rerun()
-        else:
-            st.session_state.vista_personale_attiva = False
-            if "focus" in st.query_params:
-                del st.query_params["focus"]
-
-    if giocatore_selezionato != st.session_state.giocatore_selezionato:
-        st.session_state.giocatore_selezionato = giocatore_selezionato
-        if giocatore_selezionato == "-- Mostra Tutto --":
-            st.session_state.vista_personale_attiva = False
-            if "giocatore" in st.query_params:
-                del st.query_params["giocatore"]
-            if "focus" in st.query_params:
-                del st.query_params["focus"]
-        else:
-            st.query_params["giocatore"] = giocatore_selezionato
+# Mostriamo chi ha fatto l'accesso con opzione per cambiare utente
+col_u1, col_u2 = st.columns([3, 1])
+with col_u1:
+    giocatore_selezionato = st.session_state.giocatore_selezionato
+    st.info(f"👤 Stai visualizzando il torneo come: **{giocatore_selezionato.upper()}**")
+with col_u2:
+    if st.button("🔄 Cambia Utente", use_container_width=True):
+        st.session_state.giocatore_selezionato = None
+        st.session_state.vista_personale_attiva = False
         st.rerun()
-else:
-    giocatore_selezionato = "-- Mostra Tutto --"
+
+# Pulsante per attivare/disattivare la vista personale dell'utente loggato
+etichetta_occhio = "👁️ Nascondi Vista Personale" if st.session_state.vista_personale_attiva else "👁️ Attiva Vista Personale (Solo la mia partita)"
+if st.button(etichetta_occhio, use_container_width=True):
+    st.session_state.vista_personale_attiva = not st.session_state.vista_personale_attiva
+    st.rerun()
 
 if is_admin:
     with st.expander("⚙️ Pannello Configurazione & Gestione", expanded=not st.session_state.tournament_started):
@@ -625,7 +674,7 @@ if st.session_state.tournament_started:
                 salva_stato()
                 st.rerun()
 
-        # --- MESSAGGIO IMPORTANTE INSERITO TRA LA SELEZIONE E IL TURNO ---
+        # --- MESSAGGIO IMPORTANTE ---
         st.markdown("""
             <div style="background: linear-gradient(135deg, #b45309, #d97706); border: 2px solid #f59e0b; border-radius: 12px; padding: 12px 18px; color: #fffbeb; font-weight: 700; font-size: 0.95em; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
                 🏆 <b>IMPORTANTE:</b> Chi ha vinto? Uno dei due giocatori deve assegnarsi la vittoria!
@@ -649,7 +698,7 @@ if st.session_state.tournament_started:
             partite_in_corso = partite[:num_biliardini]
             partite_in_coda = partite[num_biliardini:]
             
-            is_vista_personale = (giocatore_selezionato != "-- Mostra Tutto --" and st.session_state.vista_personale_attiva)
+            is_vista_personale = st.session_state.vista_personale_attiva
 
             if is_vista_personale:
                 partite_filtrate = []
@@ -661,7 +710,7 @@ if st.session_state.tournament_started:
                         partite_filtrate.append((idx, match))
                 
                 if not partite_filtrate:
-                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non ha una partita attiva in questo turno (o è in pausa/riposo). Clicca nuovamente sull'occhio 👁️ per visualizzare l'intero torneo.")
+                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non ha una partita attiva in questo turno (o è in pausa/riposo). Disattiva la vista personale per visualizzare l'intero torneo.")
                 else:
                     st.markdown(f"#### 🎯 Partita di: {giocatore_selezionato.upper()} (Vista Personale 👁️)")
                 
@@ -682,8 +731,8 @@ if st.session_state.tournament_started:
                 tA_att, tA_port = match["teamA"]
                 tB_att, tB_port = match["teamB"]
                 
-                giocatore_nella_squadra_a = (giocatore_selezionato != "-- Mostra Tutto --" and any(n.lower() == giocatore_selezionato.lower() for n in [tA_att['name'], tA_port['name']]))
-                giocatore_nella_squadra_b = (giocatore_selezionato != "-- Mostra Tutto --" and any(n.lower() == giocatore_selezionato.lower() for n in [tB_att['name'], tB_port['name']]))
+                giocatore_nella_squadra_a = any(n.lower() == giocatore_selezionato.lower() for n in [tA_att['name'], tA_port['name']])
+                giocatore_nella_squadra_b = any(n.lower() == giocatore_selezionato.lower() for n in [tB_att['name'], tB_port['name']])
 
                 with st.container(border=True):
                     st.markdown(f"""
