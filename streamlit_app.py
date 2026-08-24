@@ -98,15 +98,16 @@ st.markdown("""
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     
+    /* Titoli Classifiche Ingranditi e Stilizzati */
     .rank-header {
-        font-size: 0.95em;
-        font-weight: 800;
+        font-size: 1.15em;
+        font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 12px;
-        padding-bottom: 6px;
-        border-bottom: 2px solid #334155;
-        color: #f8fafc;
+        letter-spacing: 1.5px;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 3px solid #334155;
+        color: #38bdf8;
         text-align: center;
     }
 
@@ -157,8 +158,7 @@ def salva_stato():
         "initial_lives": st.session_state.initial_lives,
         "num_biliardini": st.session_state.num_biliardini,
         "current_round_matches": st.session_state.current_round_matches,
-        "round_number": st.session_state.round_number,
-        "show_podium": st.session_state.show_podium
+        "round_number": st.session_state.round_number
     }
     with open(STATE_FILE, "w") as f:
         json.dump(data, f)
@@ -174,7 +174,6 @@ def carica_stato():
                 st.session_state.num_biliardini = data.get("num_biliardini", 4)
                 st.session_state.current_round_matches = data.get("current_round_matches", [])
                 st.session_state.round_number = data.get("round_number", 0)
-                st.session_state.show_podium = data.get("show_podium", False)
                 return True
         except:
             return False
@@ -189,7 +188,6 @@ if "initialized" not in st.session_state:
         st.session_state.num_biliardini = 4
         st.session_state.current_round_matches = []
         st.session_state.round_number = 0
-        st.session_state.show_podium = False
 
 def genera_abbinamenti():
     attivi = [p for p in st.session_state.players if not p["eliminated"]]
@@ -302,13 +300,6 @@ if is_admin:
                     if st.button("🚀 Avvia Torneo", type="primary"):
                         st.session_state.tournament_started = True
                         st.session_state.round_number = 1
-                        st.session_state.show_podium = False
-                        st.session_state.current_round_matches = genera_abbinamenti()
-                        salva_stato()
-                        st.rerun()
-                else:
-                    if st.button("🔄 Turno Successivo"):
-                        st.session_state.round_number += 1
                         st.session_state.current_round_matches = genera_abbinamenti()
                         salva_stato()
                         st.rerun()
@@ -317,7 +308,6 @@ if is_admin:
                     st.session_state.tournament_started = False
                     st.session_state.current_round_matches = []
                     st.session_state.round_number = 0
-                    st.session_state.show_podium = False
                     st.session_state.players = []
                     if os.path.exists(STATE_FILE):
                         os.remove(STATE_FILE)
@@ -325,97 +315,120 @@ if is_admin:
 
 st.markdown("---")
 
-if st.session_state.tournament_started:
-    # --- TURNO IN EVIDENZA ---
-    st.markdown(f"""
-        <div class="turn-banner">
-            ⚔️ Turno N° {st.session_state.round_number}
-        </div>
-    """, unsafe_allow_html=True)
-    
-    data_turno = st.session_state.current_round_matches
-    if data_turno and data_turno.get("pass"):
-        pass_names = ", ".join([f"{p['name'].upper()}" for p in data_turno["pass"]])
-        st.info(f"💚 **Riposano (Pass):** {pass_names}")
+attivi_att = [p for p in st.session_state.players if p["role"] == "attaccante" and not p["eliminated"]]
+attivi_port = [p for p in st.session_state.players if p["role"] == "portiere" and not p["eliminated"]]
+torneo_finito = st.session_state.tournament_started and (len(attivi_att) < 2 or len(attivi_port) < 2)
 
-    partite = data_turno.get("partite", []) if data_turno else []
-    
-    if not partite:
-        st.success("🎉 Turno completato!")
-        if is_admin and not st.session_state.show_podium:
-            if st.button("🏆 Mostra Podio Finale"):
-                st.session_state.show_podium = True
-                salva_stato()
-                st.rerun()
-    else:
-        num_biliardini = st.session_state.num_biliardini
-        partite_in_corso = partite[:num_biliardini]
-        partite_in_coda = partite[num_biliardini:]
+if st.session_state.tournament_started:
+    if torneo_finito:
+        st.markdown("### 🏆 PODIO UFFICIALE FINALE")
         
-        st.markdown("#### 🏟️ Partite in Corso")
-        for idx, match in enumerate(partite_in_corso):
-            biliardino_num = idx + 1
-            tA_att, tA_port = match["teamA"]
-            tB_att, tB_port = match["teamB"]
+        atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
+        ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
+        
+        col_pod1, col_pod2 = st.columns(2)
+        with col_pod1:
+            st.markdown("#### ⚽️ Attaccanti")
+            for rank, p in enumerate(atts_sorted[:3]):
+                cuori = "❤️ " * p["lives"]
+                bare = "⚰️ " * (p["max_lives"] - p["lives"])
+                st.markdown(f"**{rank+1}° Posto:** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {cuori}{bare}", unsafe_allow_html=True)
+        with col_pod2:
+            st.markdown("#### 🥅 Portieri")
+            for rank, p in enumerate(ports_sorted[:3]):
+                cuori = "❤️ " * p["lives"]
+                bare = "⚰️ " * (p["max_lives"] - p["lives"])
+                st.markdown(f"**{rank+1}° Posto:** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {cuori}{bare}", unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+            <div class="turn-banner">
+                ⚔️ Turno N° {st.session_state.round_number}
+            </div>
+        """, unsafe_allow_html=True)
+        
+        data_turno = st.session_state.current_round_matches
+        
+        if data_turno and not data_turno.get("partite"):
+            st.session_state.round_number += 1
+            st.session_state.current_round_matches = genera_abbinamenti()
+            salva_stato()
+            st.rerun()
             
-            with st.container(border=True):
-                st.markdown(f"""
-                    <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown(f"""
-                    <div class="team-box">
-                        <div class="player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                if is_admin:
-                    if st.button("🏆 Assegna Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
-                        for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                        for per in [tB_att, tB_port]:
-                            per["last_result"] = 'L'
-                            per["lives"] = max(0, per["lives"] - 1)
-                            if per["lives"] == 0: per["eliminated"] = True
-                        st.session_state.current_round_matches["partite"].pop(idx)
-                        salva_stato()
-                        st.rerun()
-                
-                st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
-                
-                st.markdown(f"""
-                    <div class="team-box">
-                        <div class="player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                if is_admin:
-                    if st.button("🏆 Assegna Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
-                        for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                        for per in [tA_att, tA_port]:
-                            per["last_result"] = 'L'
-                            per["lives"] = max(0, per["lives"] - 1)
-                            if per["lives"] == 0: per["eliminated"] = True
-                        st.session_state.current_round_matches["partite"].pop(idx)
-                        salva_stato()
-                        st.rerun()
+        if data_turno and data_turno.get("pass"):
+            pass_names = ", ".join([f"{p['name'].upper()}" for p in data_turno["pass"]])
+            st.info(f"💚 **Riposano (Pass):** {pass_names}")
+
+        partite = data_turno.get("partite", []) if data_turno else []
+        
+        if partite:
+            num_biliardini = st.session_state.num_biliardini
+            partite_in_corso = partite[:num_biliardini]
+            partite_in_coda = partite[num_biliardini:]
             
-        if partite_in_coda:
-            st.markdown("#### ⏳ In Coda")
-            for q_idx, q_match in enumerate(partite_in_coda):
-                qa, qp = q_match["teamA"]
-                qb, qpp = q_match["teamB"]
-                st.warning(f"Coda #{q_idx+1}: [⚽️ {qa['name'].upper()} & 🥅 {qp['name'].upper()}] vs [⚽️ {qb['name'].upper()} & 🥅 {qpp['name'].upper()}]")
+            st.markdown("#### 🏟️ Partite in Corso")
+            for idx, match in enumerate(partite_in_corso):
+                biliardino_num = idx + 1
+                tA_att, tA_port = match["teamA"]
+                tB_att, tB_port = match["teamB"]
+                
+                with st.container(border=True):
+                    st.markdown(f"""
+                        <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                        <div class="team-box">
+                            <div class="player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if is_admin:
+                        if st.button("🏆 Assegna Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
+                            for v in [tA_att, tA_port]: v["last_result"] = 'W'
+                            for per in [tB_att, tB_port]:
+                                per["last_result"] = 'L'
+                                per["lives"] = max(0, per["lives"] - 1)
+                                if per["lives"] == 0: per["eliminated"] = True
+                            st.session_state.current_round_matches["partite"].pop(idx)
+                            salva_stato()
+                            st.rerun()
+                    
+                    st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                        <div class="team-box">
+                            <div class="player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if is_admin:
+                        if st.button("🏆 Assegna Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
+                            for v in [tB_att, tB_port]: v["last_result"] = 'W'
+                            for per in [tA_att, tA_port]:
+                                per["last_result"] = 'L'
+                                per["lives"] = max(0, per["lives"] - 1)
+                                if per["lives"] == 0: per["eliminated"] = True
+                            st.session_state.current_round_matches["partite"].pop(idx)
+                            salva_stato()
+                            st.rerun()
+                
+            if partite_in_coda:
+                st.markdown("#### ⏳ In Coda")
+                for q_idx, q_match in enumerate(partite_in_coda):
+                    qa, qp = q_match["teamA"]
+                    qb, qpp = q_match["teamB"]
+                    st.warning(f"Coda #{q_idx+1}: [⚽️ {qa['name'].upper()} & 🥅 {qp['name'].upper()}] vs [⚽️ {qb['name'].upper()} & 🥅 {qpp['name'].upper()}]")
 
 st.markdown("---")
 
-# --- CLASSIFICA & VITE AGGIORNATA ---
+# --- CLASSIFICA & VITE AGGIORNATA CON TITOLI INGRANDITI E PALLONI/PORTE ---
 if st.session_state.players:
     col_c1, col_c2 = st.columns(2)
     
     with col_c1:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">VITE RIMASTE ATTACCANTI</div>
+                <div class="rank-header">⚽️⚽️⚽️ VITE RIMASTE ATTACCANTI ⚽️⚽️⚽️</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             cuori = "❤️ " * p["lives"]
@@ -436,7 +449,7 @@ if st.session_state.players:
     with col_c2:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">VITE RIMASTE PORTIERI</div>
+                <div class="rank-header">🥅🥅🥅 VITE RIMASTE PORTIERI 🥅🥅🥅</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             cuori = "❤️ " * p["lives"]
@@ -453,23 +466,3 @@ if st.session_state.players:
                 </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
-
-if st.session_state.show_podium:
-    st.markdown("---")
-    st.markdown("### 🏆 Podio Ufficiale Finale")
-    atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
-    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
-    
-    col_pod1, col_pod2 = st.columns(2)
-    with col_pod1:
-        st.markdown("#### ⚽️ Top 4 Attaccanti")
-        for rank, p in enumerate(atts_sorted[:4]):
-            cuori = "❤️ " * p["lives"]
-            bare = "⚰️ " * (p["max_lives"] - p["lives"])
-            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {cuori}{bare}", unsafe_allow_html=True)
-    with col_pod2:
-        st.markdown("#### 🥅 Top 4 Portieri")
-        for rank, p in enumerate(ports_sorted[:4]):
-            cuori = "❤️ " * p["lives"]
-            bare = "⚰️ " * (p["max_lives"] - p["lives"])
-            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {cuori}{bare}", unsafe_allow_html=True)
