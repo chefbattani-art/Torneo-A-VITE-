@@ -26,7 +26,7 @@ if "current_round_matches" not in st.session_state:
 if "round_number" not in st.session_state:
     st.session_state.round_number = 0
 
-# --- FUNZIONE DI ABBINAMENTO (Spostata in cima per evitare errori) ---
+# --- FUNZIONE DI ABBINAMENTO ---
 def genera_abbinamenti():
     attivi = [p for p in st.session_state.players if not p["eliminated"]]
     atts = [p for p in attivi if p["role"] == "attaccante"]
@@ -45,7 +45,7 @@ def genera_abbinamenti():
     if st.session_state.round_number == 1:
         random.shuffle(coppie)
     else:
-        coppie.sort(key=lambda x: (x["att"]["last_result'] == 'W' or x["port"]["last_result"] == 'W'), reverse=True)
+        coppie.sort(key=lambda x: (x["att"]["last_result"] == 'W' or x["port"]["last_result"] == 'W'), reverse=True)
         
     partite = []
     i = 0
@@ -230,7 +230,6 @@ st.subheader("📋 Classifica Generale e Vite")
 if not st.session_state.players:
     st.info("Nessun giocatore registrato.")
 else:
-    # Mostriamo tutti i giocatori divisi in Attaccanti e Portieri con le loro vite in tempo reale
     col_c1, col_c2 = st.columns(2)
     
     with col_c1:
