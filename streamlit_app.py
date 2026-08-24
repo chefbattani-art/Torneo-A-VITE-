@@ -6,34 +6,76 @@ import os
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO CSS PERSONALIZZATO ---
+# --- STILE GRAFICO CSS PROFESSIONALE & COMPATTO ---
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; }
+    .main { background-color: #0b0f19; }
     
-    /* Contenitore match scuro */
-    .match-card { background-color: #161b22; padding: 16px; border-radius: 14px; margin-bottom: 24px; border: 1px solid #30363d; }
+    /* Contenitore match in stile dashboard sportiva */
+    .match-card { 
+        background: linear-gradient(145deg, #131b2e, #0d1322); 
+        padding: 14px; 
+        border-radius: 12px; 
+        margin-bottom: 14px; 
+        border: 1px solid #1e293b;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
     
-    /* Intestazione Biliardino Giallo/Dorato Marcato */
-    .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1.05em; font-weight: 900; padding: 8px; border-radius: 8px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    /* Header Biliardino Minimal e Moderno */
+    .biliardino-box { 
+        background: linear-gradient(90deg, #f59e0b, #d97706); 
+        color: #0f172a; 
+        text-align: center; 
+        font-size: 0.85em; 
+        font-weight: 800; 
+        padding: 4px; 
+        border-radius: 6px; 
+        margin-bottom: 10px; 
+        text-transform: uppercase; 
+        letter-spacing: 1.5px; 
+    }
 
-    /* Box Coppia Verde Interno */
-    .team-box { background-color: #047857; padding: 12px 8px; border-radius: 8px; border: 1px solid #34d399; color: #f3f4f6; font-size: 0.9em; text-align: center; margin-bottom: 10px; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
+    /* Box Squadra Compatto ed Elegante */
+    .team-box { 
+        background-color: #064e3b; 
+        padding: 8px 6px; 
+        border-radius: 8px; 
+        border: 1px solid #059669; 
+        color: #ecfdf5; 
+        font-size: 0.85em; 
+        text-align: center; 
+        margin-bottom: 6px; 
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .player-name {
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
 
-    /* Stile personalizzato per i pulsanti di vittoria dentro i box verdi */
+    /* Pulsanti Vittoria Integrati e Compatti */
     .stButton > button {
         width: 100%;
-        background-color: #0284c7 !important;
+        background: linear-gradient(135deg, #0284c7, #0369a1) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         border: 1px solid #38bdf8 !important;
         border-radius: 6px !important;
-        padding: 6px 4px !important;
-        font-size: 0.85em !important;
+        padding: 4px 2px !important;
+        font-size: 0.78em !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
     }
     .stButton > button:hover {
-        background-color: #0369a1 !important;
+        background: linear-gradient(135deg, #0369a1, #075985) !important;
         border-color: #7dd3fc !important;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+    
+    /* Ottimizzazione spaziature generali di Streamlit */
+    div.block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -159,7 +201,7 @@ if is_admin:
             
             st.markdown("---")
             st.markdown("### 📝 Incolla la lista dei giocatori")
-            lista_input_testo = st.text_area("Incolla partecipanti (es: 1 ⚽️ Nome, 2 🥅 Nome):", height=120)
+            lista_input_testo = st.text_area("Incolla partecipanti (es: 1 ⚽️ Nome, 2 🥅 Nome):", height=100)
             
             if st.button("📥 Importa e Registra Giocatori", type="primary"):
                 righe = lista_input_testo.split("\n")
@@ -219,22 +261,21 @@ if is_admin:
                         os.remove(STATE_FILE)
                     st.rerun()
 
-st.divider()
+st.markdown("---")
 
 # --- VISUALIZZAZIONE PARTITE ---
 if st.session_state.tournament_started:
-    st.subheader(f"⚔️ Turno N° {st.session_state.round_number}")
+    st.markdown(f"### ⚔️ Turno N° {st.session_state.round_number}")
     
     data_turno = st.session_state.current_round_matches
     if data_turno and data_turno.get("pass"):
-        for p in data_turno["pass"]:
-            icona = "⚽️" if p["role"] == "attaccante" else "🥅"
-            st.info(f"💚 **{icona} {p['name']}** riposa in questo turno (Pass automatico 💚)")
+        pass_text = ", ".join([f"{'⚽️' if p['role']=='attaccante' else '🥅'} {p['name']}" for p in data_turno["pass"]])
+        st.info(f"💚 **Riposano in questo turno (Pass):** {pass_text}")
 
     partite = data_turno.get("partite", []) if data_turno else []
     
     if not partite:
-        st.success("🎉 Turno completato! Clicca su 'Genera Turno Successivo' nel pannello admin.")
+        st.success("🎉 Turno completato! Genera il turno successivo dal pannello admin.")
         if is_admin and not st.session_state.show_podium:
             if st.button("🏆 Mostra Podio Finale"):
                 st.session_state.show_podium = True
@@ -245,30 +286,28 @@ if st.session_state.tournament_started:
         partite_in_corso = partite[:num_biliardini]
         partite_in_coda = partite[num_biliardini:]
         
-        st.markdown("### 🏟️ Partite nei Biliardini")
+        st.markdown("#### 🏟️ Partite nei Biliardini")
         for idx, match in enumerate(partite_in_corso):
             biliardino_num = idx + 1
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Apertura card match scura
+            # Card contenitore match
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
             """, unsafe_allow_html=True)
             
-            # Struttura a 3 colonne dentro la card: Squadra A (sx), VS (centro), Squadra B (dx)
             col_teamA, col_vs, col_teamB = st.columns([5, 1, 5])
             
             with col_teamA:
                 st.markdown(f"""
                     <div class="team-box">
-                        <div>⚽️ <b>{tA_att['name']}</b></div>
-                        <div>🥅 <b>{tA_port['name']}</b></div>
+                        <div class="player-name">⚽️ {tA_att['name']}</div>
+                        <div class="player-name">🥅 {tA_port['name']}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # Pulsante dentro il blocco della squadra A
                 if is_admin:
                     if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}"):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
@@ -281,17 +320,16 @@ if st.session_state.tournament_started:
                         st.rerun()
                         
             with col_vs:
-                st.markdown("<div style='text-align: center; font-weight: 900; color: #f59e0b; padding-top: 35px; font-size: 1.1em;'>VS</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align: center; font-weight: 900; color: #f59e0b; padding-top: 25px; font-size: 0.95em;'>VS</div>", unsafe_allow_html=True)
                 
             with col_teamB:
                 st.markdown(f"""
                     <div class="team-box">
-                        <div>⚽️ <b>{tB_att['name']}</b></div>
-                        <div>🥅 <b>{tB_port['name']}</b></div>
+                        <div class="player-name">⚽️ {tB_att['name']}</div>
+                        <div class="player-name">🥅 {tB_port['name']}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # Pulsante dentro il blocco della squadra B
                 if is_admin:
                     if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}"):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
@@ -306,24 +344,26 @@ if st.session_state.tournament_started:
             st.markdown("</div>", unsafe_allow_html=True)
             
         if partite_in_coda:
-            st.markdown("### ⏳ In Coda")
+            st.markdown("#### ⏳ In Coda")
             for q_idx, q_match in enumerate(partite_in_coda):
                 qa, qp = q_match["teamA"]
                 qb, qpp = q_match["teamB"]
                 st.warning(f"Coda #{q_idx+1}: [⚽️ {qa['name']} & 🥅 {qp['name']}] vs [⚽️ {qb['name']} & 🥅 {qpp['name']}]")
 
+st.markdown("---")
+
 # --- CLASSIFICA ---
-st.subheader("📋 Classifica Generale e Vite")
+st.markdown("### 📋 Classifica Generale e Vite")
 if st.session_state.players:
     col_c1, col_c2 = st.columns(2)
     with col_c1:
-        st.markdown("### ⚽️ Attaccanti")
+        st.markdown("#### ⚽️ Attaccanti")
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
             stato = "💀 ELIMINATO" if p["eliminated"] else cuori
             st.markdown(f"**{p['name']}** — {stato}")
     with col_c2:
-        st.markdown("### 🥅 Portieri")
+        st.markdown("#### 🥅 Portieri")
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
             stato = "💀 ELIMINATO" if p["eliminated"] else cuori
@@ -331,17 +371,17 @@ if st.session_state.players:
 
 # --- PODIO FINALE ---
 if st.session_state.show_podium:
-    st.divider()
-    st.subheader("🏆 Podio Ufficiale Finale")
+    st.markdown("---")
+    st.markdown("### 🏆 Podio Ufficiale Finale")
     atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
     ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
     
     col_pod1, col_pod2 = st.columns(2)
     with col_pod1:
-        st.markdown("### ⚽️ Top 4 Attaccanti")
+        st.markdown("#### ⚽️ Top 4 Attaccanti")
         for rank, p in enumerate(atts_sorted[:4]):
             st.markdown(f"**{rank+1}°** {p['name']} — {'❤️ ' * p['lives']}")
     with col_pod2:
-        st.markdown("### 🥅 Top 4 Portieri")
+        st.markdown("#### 🥅 Top 4 Portieri")
         for rank, p in enumerate(ports_sorted[:4]):
             st.markdown(f"**{rank+1}°** {p['name']} — {'❤️ ' * p['lives']}")
