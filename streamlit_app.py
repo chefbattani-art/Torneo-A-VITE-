@@ -6,6 +6,97 @@ import os
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
+# --- STILE GRAFICO PROFESSIONALE (MODERN DARK THEME & CARD DESIGN) ---
+st.markdown("""
+    <style>
+    .main { background-color: #0b0f19; }
+    
+    /* Box principale della partita */
+    .match-container {
+        background: linear-gradient(145deg, #131b2e, #0d1322);
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    }
+    
+    /* Intestazione Biliardino */
+    .biliardino-header {
+        background: linear-gradient(90deg, #f59e0b, #d97706);
+        color: #0f172a;
+        text-align: center;
+        font-weight: 800;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        padding: 6px;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+
+    /* Box Squadra / Coppia */
+    .team-box {
+        background: linear-gradient(145deg, #064e3b, #022c22);
+        border: 1px solid #059669;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+        color: #ecfdf5;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    
+    .team-title {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #34d399;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .player-names {
+        font-size: 0.95em;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    /* Scritta VS centrale */
+    .vs-text {
+        text-align: center;
+        font-weight: 900;
+        color: #f59e0b;
+        font-size: 1.1em;
+        margin: 10px 0;
+        letter-spacing: 2px;
+    }
+
+    /* Stile Pulsanti Vittoria */
+    .stButton > button {
+        width: 100% !important;
+        background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border: 1px solid #38bdf8 !important;
+        border-radius: 8px !important;
+        padding: 8px 0px !important;
+        font-size: 0.8em !important;
+        box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);
+        transition: all 0.2s ease-in-out;
+    }
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #0369a1, #075985) !important;
+        border-color: #7dd3fc !important;
+        box-shadow: 0 6px 8px rgba(2, 132, 199, 0.4);
+    }
+    
+    div.block-container {
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 STATE_FILE = "torneo_state.json"
 
 def salva_stato():
@@ -211,40 +302,55 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # UNICO BOX PER OGNI PARTITA
-            with st.container(border=True):
-                st.markdown(f"**📍 BILIARDINO {biliardino_num}**")
-                
-                col_teamA, col_vs, col_teamB = st.columns([5, 1, 5])
-                
-                with col_teamA:
-                    st.markdown(f"⚽️ **{tA_att['name']}**\n\n🥅 **{tA_port['name']}**")
-                    if is_admin:
-                        if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
-                            for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                            for per in [tB_att, tB_port]:
-                                per["last_result"] = 'L'
-                                per["lives"] = max(0, per["lives"] - 1)
-                                if per["lives"] == 0: per["eliminated"] = True
-                            st.session_state.current_round_matches["partite"].pop(idx)
-                            salva_stato()
-                            st.rerun()
-                            
-                with col_vs:
-                    st.markdown("<h3 style='text-align: center; color: gray;'>VS</h3>", unsafe_allow_html=True)
-                    
-                with col_teamB:
-                    st.markdown(f"⚽️ **{tB_att['name']}**\n\n🥅 **{tB_port['name']}**")
-                    if is_admin:
-                        if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
-                            for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                            for per in [tA_att, tA_port]:
-                                per["last_result"] = 'L'
-                                per["lives"] = max(0, per["lives"] - 1)
-                                if per["lives"] == 0: per["eliminated"] = True
-                            st.session_state.current_round_matches["partite"].pop(idx)
-                            salva_stato()
-                            st.rerun()
+            # QUADRANTE UNICO DELLA PARTITA
+            st.markdown(f"""
+                <div class="match-container">
+                    <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
+            """, unsafe_allow_html=True)
+            
+            # COPPIA A (Centrata)
+            st.markdown(f"""
+                <div class="team-box">
+                    <div class="team-title">Coppia A</div>
+                    <div class="player-names">⚽️ {tA_att['name']} &nbsp;|&nbsp; 🥅 {tA_port['name']}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            if is_admin:
+                if st.button("🏆 Assegna Vittoria a Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
+                    for v in [tA_att, tA_port]: v["last_result"] = 'W'
+                    for per in [tB_att, tB_port]:
+                        per["last_result"] = 'L'
+                        per["lives"] = max(0, per["lives"] - 1)
+                        if per["lives"] == 0: per["eliminated"] = True
+                    st.session_state.current_round_matches["partite"].pop(idx)
+                    salva_stato()
+                    st.rerun()
+            
+            # SCRITTA VS CENTRALE
+            st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
+            
+            # COPPIA B (Centrata)
+            st.markdown(f"""
+                <div class="team-box">
+                    <div class="team-title">Coppia B</div>
+                    <div class="player-names">⚽️ {tB_att['name']} &nbsp;|&nbsp; 🥅 {tB_port['name']}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            if is_admin:
+                if st.button("🏆 Assegna Vittoria a Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
+                    for v in [tB_att, tB_port]: v["last_result"] = 'W'
+                    for per in [tA_att, tA_port]:
+                        per["last_result"] = 'L'
+                        per["lives"] = max(0, per["lives"] - 1)
+                        if per["lives"] == 0: per["eliminated"] = True
+                    st.session_state.current_round_matches["partite"].pop(idx)
+                    salva_stato()
+                    st.rerun()
+            
+            # CHIUSURA QUADRANTE
+            st.markdown("</div>", unsafe_allow_html=True)
             
         if partite_in_coda:
             st.markdown("#### ⏳ In Coda")
