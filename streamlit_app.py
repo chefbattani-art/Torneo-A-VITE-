@@ -6,29 +6,29 @@ import os
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO CSS PER QUADRANTE UNICO DI PARTITA ---
+# --- STILE GRAFICO CSS PER QUADRANTE UNICO ---
 st.markdown("""
     <style>
     .main { background-color: #0b0f19; }
     
-    /* Quadrante unico per ogni singola partita */
+    /* Quadrante unico per ogni partita */
     .match-card { 
         background: linear-gradient(145deg, #131b2e, #0d1322); 
-        padding: 14px; 
+        padding: 12px; 
         border-radius: 12px; 
-        margin-bottom: 14px; 
+        margin-bottom: 12px; 
         border: 1px solid #1e293b;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
     
-    /* Header Biliardino all'interno del box */
-    .biliardino-box { 
+    /* Header Biliardino */
+    .biliardino-title { 
         background: linear-gradient(90deg, #f59e0b, #d97706); 
         color: #0f172a; 
         text-align: center; 
         font-size: 0.8em; 
         font-weight: 800; 
-        padding: 4px; 
+        padding: 5px; 
         border-radius: 6px; 
         margin-bottom: 10px; 
         text-transform: uppercase; 
@@ -38,7 +38,7 @@ st.markdown("""
     /* Box Squadra */
     .team-box { 
         background-color: #064e3b; 
-        padding: 8px 6px; 
+        padding: 8px; 
         border-radius: 8px; 
         border: 1px solid #059669; 
         color: #ecfdf5; 
@@ -52,7 +52,7 @@ st.markdown("""
         line-height: 1.3;
     }
 
-    /* Pulsante Vittoria Centrato sotto ogni squadra */
+    /* Pulsanti Vittoria */
     .stButton > button {
         width: 100% !important;
         background: linear-gradient(135deg, #0284c7, #0369a1) !important;
@@ -280,13 +280,13 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Apertura del quadrante unico per la partita corrente
+            # Apertura del blocco/quadrante unico della partita
             st.markdown(f"""
                 <div class="match-card">
-                    <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
+                    <div class="biliardino-title">BILIARDINO {biliardino_num}</div>
             """, unsafe_allow_html=True)
             
-            # Colonne interne: Coppia A | VS | Coppia B
+            # Struttura interna: Squadra A (colonna sinistra), VS (centro), Squadra B (colonna destra)
             col_teamA, col_vs, col_teamB = st.columns([5, 1, 5])
             
             with col_teamA:
@@ -309,7 +309,7 @@ if st.session_state.tournament_started:
                         st.rerun()
                         
             with col_vs:
-                st.markdown("<div style='text-align: center; font-weight: 800; color: #f59e0b; padding-top: 20px; font-size: 0.85em;'>VS</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align: center; font-weight: 800; color: #f59e0b; padding-top: 22px; font-size: 0.85em;'>VS</div>", unsafe_allow_html=True)
                 
             with col_teamB:
                 st.markdown(f"""
@@ -330,7 +330,7 @@ if st.session_state.tournament_started:
                         salva_stato()
                         st.rerun()
                         
-            # Chiusura del quadrante della partita
+            # Chiusura del blocco/quadrante unico
             st.markdown("</div>", unsafe_allow_html=True)
             
         if partite_in_coda:
