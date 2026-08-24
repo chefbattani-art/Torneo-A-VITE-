@@ -99,7 +99,7 @@ st.markdown("""
     }
     
     .rank-header {
-        font-size: 1em;
+        font-size: 0.95em;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -107,6 +107,7 @@ st.markdown("""
         padding-bottom: 6px;
         border-bottom: 2px solid #334155;
         color: #f8fafc;
+        text-align: center;
     }
 
     .player-row {
@@ -123,14 +124,21 @@ st.markdown("""
     
     .player-row-eliminated {
         background: #111827;
-        opacity: 0.6;
-        border: 1px solid #1f2937;
+        opacity: 0.8;
+        border: 1px solid #374151;
     }
     
     .rank-name {
         font-weight: 800;
         text-transform: uppercase;
         color: #facc15;
+    }
+
+    .rank-name-eliminated {
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #ef4444;
+        text-decoration: line-through;
     }
     
     div.block-container {
@@ -350,14 +358,11 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # CORNICE UNICA ESTERNA PER OGNI SINGOLA PARTITA
             with st.container(border=True):
-                # Intestazione Biliardino
                 st.markdown(f"""
                     <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
                 """, unsafe_allow_html=True)
                 
-                # COPPIA A
                 st.markdown(f"""
                     <div class="team-box">
                         <div class="player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
@@ -375,10 +380,8 @@ if st.session_state.tournament_started:
                         salva_stato()
                         st.rerun()
                 
-                # SCRITTA VS
                 st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
                 
-                # COPPIA B
                 st.markdown(f"""
                     <div class="team-box">
                         <div class="player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
@@ -405,23 +408,27 @@ if st.session_state.tournament_started:
 
 st.markdown("---")
 
-# --- CLASSIFICA & VITE RIDISEGNATA ---
+# --- CLASSIFICA & VITE AGGIORNATA ---
 if st.session_state.players:
     col_c1, col_c2 = st.columns(2)
     
     with col_c1:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">⚽️ Attaccanti</div>
+                <div class="rank-header">VITE RIMASTE ATTACCANTI</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
-            cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
+            cuori = "❤️ " * p["lives"]
+            bare = "⚰️ " * (p["max_lives"] - p["lives"])
+            vite_display = cuori + bare
+            
             css_class = "player-row player-row-eliminated" if p["eliminated"] else "player-row"
-            stato_txt = "💀 ELIMINATO" if p["eliminated"] else cuori
+            name_class = "rank-name-eliminated" if p["eliminated"] else "rank-name"
+            
             st.markdown(f"""
                 <div class="{css_class}">
-                    <span class="rank-name">{p['name']}</span>
-                    <span>{stato_txt}</span>
+                    <span class="{name_class}">{p['name']}</span>
+                    <span>{vite_display}</span>
                 </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -429,16 +436,20 @@ if st.session_state.players:
     with col_c2:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">🥅 Portieri</div>
+                <div class="rank-header">VITE RIMASTE PORTIERI</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
-            cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
+            cuori = "❤️ " * p["lives"]
+            bare = "⚰️ " * (p["max_lives"] - p["lives"])
+            vite_display = cuori + bare
+            
             css_class = "player-row player-row-eliminated" if p["eliminated"] else "player-row"
-            stato_txt = "💀 ELIMINATO" if p["eliminated"] else cuori
+            name_class = "rank-name-eliminated" if p["eliminated"] else "rank-name"
+            
             st.markdown(f"""
                 <div class="{css_class}">
-                    <span class="rank-name">{p['name']}</span>
-                    <span>{stato_txt}</span>
+                    <span class="{name_class}">{p['name']}</span>
+                    <span>{vite_display}</span>
                 </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -453,8 +464,12 @@ if st.session_state.show_podium:
     with col_pod1:
         st.markdown("#### ⚽️ Top 4 Attaccanti")
         for rank, p in enumerate(atts_sorted[:4]):
-            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {'❤️ ' * p['lives']}", unsafe_allow_html=True)
+            cuori = "❤️ " * p["lives"]
+            bare = "⚰️ " * (p["max_lives"] - p["lives"])
+            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {cuori}{bare}", unsafe_allow_html=True)
     with col_pod2:
         st.markdown("#### 🥅 Top 4 Portieri")
         for rank, p in enumerate(ports_sorted[:4]):
-            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {'❤️ ' * p['lives']}", unsafe_allow_html=True)
+            cuori = "❤️ " * p["lives"]
+            bare = "⚰️ " * (p["max_lives"] - p["lives"])
+            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {cuori}{bare}", unsafe_allow_html=True)
