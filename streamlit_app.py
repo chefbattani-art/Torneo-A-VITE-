@@ -4,11 +4,13 @@ import re
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO ---
+# --- STILE GRAFICO CSS ---
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; }
+    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; background-color: #10b981; color: white; border: none; }
+    .stButton>button:hover { background-color: #059669; color: white; }
+    .match-box { background-color: #1f2937; padding: 16px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #374151; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -32,7 +34,6 @@ if "show_podium" not in st.session_state:
 def genera_abbinamenti():
     attivi = [p for p in st.session_state.players if not p["eliminated"]]
     
-    # Al primo turno facciamo tutto puramente casuale
     if st.session_state.round_number == 1:
         atts = [p for p in attivi if p["role"] == "attaccante"]
         ports = [p for p in attivi if p["role"] == "portiere"]
@@ -45,9 +46,7 @@ def genera_abbinamenti():
             coppie.append({"att": atts[i], "port": ports[i]})
         avanzi = atts[min_len:] + ports[min_len:]
         random.shuffle(coppie)
-        
     else:
-        # Turni successivi: Dividiamo per ruolo e per esito precedente (W vs L)
         atts_w = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") == 'W']
         atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") != 'W']
         
@@ -60,18 +59,10 @@ def genera_abbinamenti():
         random.shuffle(ports_l)
         
         coppie = []
-        # Creiamo coppie unendo un attaccante vincente con un portiere perdente (o viceversa)
-        # per formare squadre miste equilibrate W + L
-        
-        # Coppia tipo 1: Attaccante Vincitore + Portiere Perdente
         while atts_w and ports_l:
             coppie.append({"att": atts_w.pop(0), "port": ports_l.pop(0)})
-            
-        # Coppia tipo 2: Attaccante Perdente + Portiere Vincitore
         while atts_l and ports_w:
             coppie.append({"att": atts_l.pop(0), "port": ports_w.pop(0)})
-            
-        # Se avanzano altri giocatori dello stesso esito, li accoppiamo tra loro per esaurire la lista
         while atts_w and ports_w:
             coppie.append({"att": atts_w.pop(0), "port": ports_w.pop(0)})
         while atts_l and ports_l:
@@ -80,7 +71,6 @@ def genera_abbinamenti():
         avanzi = atts_w + atts_l + ports_w + ports_l
         random.shuffle(coppie)
 
-    # Formiamo le partite accoppiando le squadre
     partite = []
     i = 0
     while i < len(coppie) - 1:
@@ -193,7 +183,7 @@ st.divider()
 
 # --- VISUALIZZAZIONE PARTITE E BILIARDINI ---
 if st.session_state.tournament_started:
-    st.subheader(f"⚔️ Turno N° {st.session_state.round_number} - Gestione Biliardini")
+    st.subheader(f"⚔️ Turno N° {st.session_state.round_number}")
     
     data_turno = st.session_state.current_round_matches
     
@@ -221,41 +211,54 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
+            # Contenitore stile scheda partita
             with st.container():
-                st.markdown(f"**📍 Biliardino {biliardino_num}**")
+                st.markdown(f"""
+                    <div class="match-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: bold; color: #38bdf8; font-size: 1.1em;">Partita {idx+1}</span>
+                            <span style="font-weight: bold; color: #f43f5e;">⚽️ Biliardino {biliardino_num}</span>
+                        </div>
+                """, unsafe_allow_html=True)
+                
                 col_m1, col_mvs, col_m2 = st.columns([5, 1, 5])
                 with col_m1:
-                    st.markdown(f"🔴 **Team Rosso**\n* ⚽️ {tA_att['name']}\n* 🥅 {tA_port['name']}")
+                    st.markdown(f"🔴 **Team A**\n* ⚽️ {tA_att['name']}\n* 🥅 {tA_port['name']}")
                 with col_mvs:
-                    st.markdown("<h3 style='text-align: center; color: #f59e0b;'>VS</h3>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='text-align: center; color: #f59e0b; margin-top: 15px;'>VS</h3>", unsafe_allow_html=True)
                 with col_m2:
-                    st.markdown(f"🔵 **Team Blu**\n* ⚽️ {tB_att['name']}\n* 🥅 {tB_port['name']}")
+                    st.markdown(f"🔵 **Team B**\n* ⚽️ {tB_att['name']}\n* 🥅 {tB_port['name']}")
                 
                 if is_admin:
-                    vincitore_scelto = st.selectbox(f"Seleziona chi ha vinto sul Biliardino {biliardino_num}:", ["Seleziona vincitore...", "Team Rosso (Vince)", "Team Blu (Vince)"], key=f"match_res_{st.session_state.round_number}_{idx}")
-                    
-                    if vincitore_scelto != "Seleziona vincitore...":
-                        if st.button(f"Conferma Risultato Biliardino {biliardino_num}", key=f"conf_match_{st.session_state.round_number}_{idx}"):
-                            if vincitore_scelto == "Team Rosso (Vince)":
-                                vincenti = [tA_att, tA_port]
-                                perdenti = [tB_att, tB_port]
-                            else:
-                                vincenti = [tB_att, tB_port]
-                                perdenti = [tA_att, tA_port]
-                                
-                            for v in vincenti:
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if st.button("🏆 Segna Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}"):
+                            for v in [tA_att, tA_port]:
                                 v["last_result"] = 'W'
-                            for per in perdenti:
+                            for per in [tB_att, tB_port]:
                                 per["last_result"] = 'L'
                                 per["lives"] -= 1
                                 if per["lives"] <= 0:
                                     per["lives"] = 0
                                     per["eliminated"] = True
-                                    
                             st.session_state.current_round_matches["partite"].pop(idx)
-                            st.success("Risultato registrato! I perdenti perdono 1 vita 🖤.")
+                            st.success("Vittoria Team A registrata!")
                             st.rerun()
-                st.markdown("---")
+                    with col_btn2:
+                        if st.button("🏆 Segna Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                            for v in [tB_att, tB_port]:
+                                v["last_result"] = 'W'
+                            for per in [tA_att, tA_port]:
+                                per["last_result"] = 'L'
+                                per["lives"] -= 1
+                                if per["lives"] <= 0:
+                                    per["lives"] = 0
+                                    per["eliminated"] = True
+                            st.session_state.current_round_matches["partite"].pop(idx)
+                            st.success("Vittoria Team B registrata!")
+                            st.rerun()
+                            
+                st.markdown("</div>", unsafe_allow_html=True)
             
         if partite_in_coda:
             st.markdown("### ⏳ Partite in Coda (In attesa che si liberi un biliardino)")
