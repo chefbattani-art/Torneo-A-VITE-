@@ -1,15 +1,14 @@
 import streamlit as st
 import random
+import re
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO MIGLIORATO (CSS) ---
+# --- STILE GRAFICO ---
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
     .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; }
-    .match-card { background: #1f2937; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #374151; }
-    .stAlert { border-radius: 8px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -26,6 +25,38 @@ if "current_round_matches" not in st.session_state:
     st.session_state.current_round_matches = []
 if "round_number" not in st.session_state:
     st.session_state.round_number = 0
+
+# --- FUNZIONE DI ABBINAMENTO (Spostata in cima per evitare errori) ---
+def genera_abbinamenti():
+    attivi = [p for p in st.session_state.players if not p["eliminated"]]
+    atts = [p for p in attivi if p["role"] == "attaccante"]
+    ports = [p for p in attivi if p["role"] == "portiere"]
+    
+    random.shuffle(atts)
+    random.shuffle(ports)
+    
+    min_len = min(len(atts), len(ports))
+    coppie = []
+    for i in range(min_len):
+        coppie.append({"att": atts[i], "port": ports[i]})
+        
+    avanzi = atts[min_len:] + ports[min_len:]
+    
+    if st.session_state.round_number == 1:
+        random.shuffle(coppie)
+    else:
+        coppie.sort(key=lambda x: (x["att"]["last_result'] == 'W' or x["port"]["last_result"] == 'W'), reverse=True)
+        
+    partite = []
+    i = 0
+    while i < len(coppie) - 1:
+        partite.append({
+            "teamA": (coppie[i]["att"], coppie[i]["port"]),
+            "teamB": (coppie[i+1]["att"], coppie[i+1]["port"])
+        })
+        i += 2
+        
+    return {"partite": partite, "pass": avanzi}
 
 # --- BARRA LATERALE ADMIN ---
 st.sidebar.title("🔐 Accesso Admin")
@@ -51,10 +82,9 @@ if is_admin:
                 st.session_state.num_biliardini = st.number_input("Numero Biliardini", min_value=1, max_value=10, value=4)
             
             st.markdown("---")
-            st.markdown("### 📝 Inserisci la lista dei giocatori")
-            st.markdown("Incolla qui sotto la tua lista completa. Il sistema riconoscerà in automatico **🥅** per i portieri e **⚽️** (o ⚽) per gli attaccanti, ignorando i numeri.")
+            st.markdown("### 📝 Incolla la lista dei giocatori")
+            st.markdown("Incolla qui sotto la tua lista completa. Il sistema riconoscerà in automatico **🥅** per i portieri e **⚽️** per gli attaccanti, ignorando i numeri.")
             
-            # Area di testo grande per incollare tutta la lista in un colpo solo
             lista_input_testo = st.text_area("Incolla la lista completa dei partecipanti:", height=150, placeholder="1 🥅 Davide\n2 🥅 Francesco\n...\n1 ⚽ Luigi I.")
             
             if st.button("📥 Importa e Registra Giocatori", type="primary"):
@@ -67,21 +97,16 @@ if is_admin:
                         continue
                     
                     role = None
-                    # Controlliamo l'emoji
                     if "🥅" in riga_pulita:
                         role = "portiere"
                     elif "⚽️" in riga_pulita or "⚽" in riga_pulita:
                         role = "attaccante"
                         
                     if role:
-                        # Puliamo il nome rimuovendo l'emoji e i numeri iniziali
                         nome = riga_pulita.replace("🥅", "").replace("⚽️", "").replace("⚽", "")
-                        # Rimuoviamo eventuali numeri all'inizio (es. "1", "2")
-                        import re
                         nome = re.sub(r'^\d+[\.\-\s]*', '', nome).strip()
                         
                         if nome:
-                            # Controlliamo se esiste già
                             if not any(p["name"].lower() == nome.lower() and p["role"] == role for p in st.session_state.players):
                                 player_obj = {
                                     "id": len(st.session_state.players) + 1,
@@ -98,7 +123,6 @@ if is_admin:
                 st.success(f"Importati con successo {count_aggiunti} giocatori!")
                 st.rerun()
 
-    # Controlli di avvio torneo
     attaccanti = [p for p in st.session_state.players if p["role"] == "attaccante"]
     portieri = [p for p in st.session_state.players if p["role"] == "portiere"]
     
@@ -130,38 +154,6 @@ if is_admin:
                 st.rerun()
 
 st.divider()
-
-# --- FUNZIONE DI ABBINAMENTO ---
-def genera_abbinamenti():
-    attivi = [p for p in st.session_state.players if not p["eliminated"]]
-    atts = [p for p in attivi if p["role"] == "attaccante"]
-    ports = [p for p in attivi if p["role"] == "portiere"]
-    
-    random.shuffle(atts)
-    random.shuffle(ports)
-    
-    min_len = min(len(atts), len(ports))
-    coppie = []
-    for i in range(min_len):
-        coppie.append({"att": atts[i], "port": ports[i]})
-        
-    avanzi = atts[min_len:] + ports[min_len:]
-    
-    if st.session_state.round_number == 1:
-        random.shuffle(coppie)
-    else:
-        coppie.sort(key=lambda x: (x["att"]["last_result"] == 'W' or x["port"]["last_result"] == 'W'), reverse=True)
-        
-    partite = []
-    i = 0
-    while i < len(coppie) - 1:
-        partite.append({
-            "teamA": (coppie[i]["att"], coppie[i]["port"]),
-            "teamB": (coppie[i+1]["att"], coppie[i+1]["port"])
-        })
-        i += 2
-        
-    return {"partite": partite, "pass": avanzi}
 
 # --- VISUALIZZAZIONE PARTITE E BILIARDINI ---
 if st.session_state.tournament_started:
@@ -232,27 +224,25 @@ if st.session_state.tournament_started:
                 qtB_att, qtB_port = q_match["teamB"]
                 st.warning(f"In coda #{q_idx+1} ➔ [⚽️ {qtA_att['name']} & 🥅 {qtA_port['name']}] vs [⚽️ {qtB_att['name']} & 🥅 {qtB_port['name']}]")
 
-# --- PODIO E CLASSIFICA FINALE ---
-st.subheader("🏆 Podio e Classifica Finale")
+# --- CLASSIFICA GENERALE DI TUTTI I GIOCATORI ---
+st.subheader("📋 Classifica Generale e Vite")
 
 if not st.session_state.players:
     st.info("Nessun giocatore registrato.")
 else:
-    atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
-    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
+    # Mostriamo tutti i giocatori divisi in Attaccanti e Portieri con le loro vite in tempo reale
+    col_c1, col_c2 = st.columns(2)
     
-    col_pod1, col_pod2 = st.columns(2)
-    
-    with col_pod1:
-        st.markdown("### ⚽️ Migliori 4 Attaccanti")
-        for rank, p in enumerate(atts_sorted[:4]):
+    with col_c1:
+        st.markdown("### ⚽️ Attaccanti")
+        for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
             stato = "💀 ELIMINATO" if p["eliminated"] else cuori
-            st.markdown(f"**{rank+1}°** {p['name']} — {stato}")
+            st.markdown(f"**{p['name']}** — {stato}")
             
-    with col_pod2:
-        st.markdown("### 🥅 Migliori 4 Portieri")
-        for rank, p in enumerate(ports_sorted[:4]):
+    with col_c2:
+        st.markdown("### 🥅 Portieri")
+        for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
             stato = "💀 ELIMINATO" if p["eliminated"] else cuori
-            st.markdown(f"**{rank+1}°** {p['name']} — {stato}")
+            st.markdown(f"**{p['name']}** — {stato}")
