@@ -6,76 +6,72 @@ import os
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO CSS PROFESSIONALE & COMPATTO ---
+# --- STILE GRAFICO CSS ULTRASCOMPATTO ---
 st.markdown("""
     <style>
     .main { background-color: #0b0f19; }
     
-    /* Contenitore match in stile dashboard sportiva */
+    /* Contenitore match ridotto al minimo */
     .match-card { 
         background: linear-gradient(145deg, #131b2e, #0d1322); 
-        padding: 14px; 
-        border-radius: 12px; 
-        margin-bottom: 14px; 
+        padding: 8px 10px; 
+        border-radius: 10px; 
+        margin-bottom: 8px; 
         border: 1px solid #1e293b;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
-    /* Header Biliardino Minimal e Moderno */
+    /* Header Biliardino Sottile */
     .biliardino-box { 
         background: linear-gradient(90deg, #f59e0b, #d97706); 
         color: #0f172a; 
         text-align: center; 
-        font-size: 0.85em; 
+        font-size: 0.78em; 
         font-weight: 800; 
-        padding: 4px; 
-        border-radius: 6px; 
-        margin-bottom: 10px; 
+        padding: 2px; 
+        border-radius: 4px; 
+        margin-bottom: 6px; 
         text-transform: uppercase; 
-        letter-spacing: 1.5px; 
+        letter-spacing: 1px; 
     }
 
-    /* Box Squadra Compatto ed Elegante */
+    /* Box Squadra Compatto */
     .team-box { 
         background-color: #064e3b; 
-        padding: 8px 6px; 
-        border-radius: 8px; 
+        padding: 6px 4px; 
+        border-radius: 6px; 
         border: 1px solid #059669; 
         color: #ecfdf5; 
-        font-size: 0.85em; 
+        font-size: 0.8em; 
         text-align: center; 
-        margin-bottom: 6px; 
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        margin-bottom: 4px; 
     }
     
     .player-name {
         font-weight: 600;
-        letter-spacing: 0.3px;
+        line-height: 1.2;
     }
 
-    /* Pulsanti Vittoria Integrati e Compatti */
+    /* Pulsante Vittoria Centrato e Ottimizzato */
     .stButton > button {
         width: 100%;
         background: linear-gradient(135deg, #0284c7, #0369a1) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         border: 1px solid #38bdf8 !important;
-        border-radius: 6px !important;
-        padding: 4px 2px !important;
-        font-size: 0.78em !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        transition: all 0.2s ease;
+        border-radius: 5px !important;
+        padding: 2px 0px !important;
+        font-size: 0.75em !important;
+        margin-top: 0px !important;
     }
     .stButton > button:hover {
         background: linear-gradient(135deg, #0369a1, #075985) !important;
         border-color: #7dd3fc !important;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.3);
     }
     
-    /* Ottimizzazione spaziature generali di Streamlit */
+    /* Riduzione generale spaziatura Streamlit */
     div.block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 2rem;
+        padding-top: 1rem;
+        padding-bottom: 1.5rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -186,7 +182,7 @@ if is_admin:
 else:
     st.sidebar.info("Modalità Spettatore (Sola lettura)")
 
-st.title("⚽️ Torneo a Vite: Attaccanti & Portieri 🥅")
+st.title("⚽️ Torneo a Vite")
 
 # --- PANNELLO CONFIGURAZIONE ---
 if is_admin:
@@ -200,8 +196,7 @@ if is_admin:
                 st.session_state.num_biliardini = st.number_input("Numero Biliardini", min_value=1, max_value=10, value=st.session_state.num_biliardini)
             
             st.markdown("---")
-            st.markdown("### 📝 Incolla la lista dei giocatori")
-            lista_input_testo = st.text_area("Incolla partecipanti (es: 1 ⚽️ Nome, 2 🥅 Nome):", height=100)
+            lista_input_testo = st.text_area("Incolla partecipanti (es: 1 ⚽️ Nome, 2 🥅 Nome):", height=80)
             
             if st.button("📥 Importa e Registra Giocatori", type="primary"):
                 righe = lista_input_testo.split("\n")
@@ -237,7 +232,7 @@ if is_admin:
             col_act1, col_act2 = st.columns(2)
             with col_act1:
                 if not st.session_state.tournament_started:
-                    if st.button("🚀 Avvia Torneo e 1° Turno", type="primary"):
+                    if st.button("🚀 Avvia Torneo", type="primary"):
                         st.session_state.tournament_started = True
                         st.session_state.round_number = 1
                         st.session_state.show_podium = False
@@ -245,13 +240,13 @@ if is_admin:
                         salva_stato()
                         st.rerun()
                 else:
-                    if st.button("🔄 Genera Turno Successivo"):
+                    if st.button("🔄 Turno Successivo"):
                         st.session_state.round_number += 1
                         st.session_state.current_round_matches = genera_abbinamenti()
                         salva_stato()
                         st.rerun()
             with col_act2:
-                if st.button("🛑 Ricomincia da Zero (Reset)"):
+                if st.button("🛑 Reset Totale"):
                     st.session_state.tournament_started = False
                     st.session_state.current_round_matches = []
                     st.session_state.round_number = 0
@@ -270,12 +265,12 @@ if st.session_state.tournament_started:
     data_turno = st.session_state.current_round_matches
     if data_turno and data_turno.get("pass"):
         pass_text = ", ".join([f"{'⚽️' if p['role']=='attaccante' else '🥅'} {p['name']}" for p in data_turno["pass"]])
-        st.info(f"💚 **Riposano in questo turno (Pass):** {pass_text}")
+        st.info(f"💚 **Riposano (Pass):** {pass_text}")
 
     partite = data_turno.get("partite", []) if data_turno else []
     
     if not partite:
-        st.success("🎉 Turno completato! Genera il turno successivo dal pannello admin.")
+        st.success("🎉 Turno completato!")
         if is_admin and not st.session_state.show_podium:
             if st.button("🏆 Mostra Podio Finale"):
                 st.session_state.show_podium = True
@@ -286,13 +281,13 @@ if st.session_state.tournament_started:
         partite_in_corso = partite[:num_biliardini]
         partite_in_coda = partite[num_biliardini:]
         
-        st.markdown("#### 🏟️ Partite nei Biliardini")
+        st.markdown("#### 🏟️ Partite in Corso")
         for idx, match in enumerate(partite_in_corso):
             biliardino_num = idx + 1
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Card contenitore match
+            # Card contenitore match ridotta
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
@@ -309,7 +304,7 @@ if st.session_state.tournament_started:
                 """, unsafe_allow_html=True)
                 
                 if is_admin:
-                    if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta A", key=f"win_A_{st.session_state.round_number}_{idx}"):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
                         for per in [tB_att, tB_port]:
                             per["last_result"] = 'L'
@@ -320,7 +315,7 @@ if st.session_state.tournament_started:
                         st.rerun()
                         
             with col_vs:
-                st.markdown("<div style='text-align: center; font-weight: 900; color: #f59e0b; padding-top: 25px; font-size: 0.95em;'>VS</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align: center; font-weight: 800; color: #f59e0b; padding-top: 15px; font-size: 0.85em;'>VS</div>", unsafe_allow_html=True)
                 
             with col_teamB:
                 st.markdown(f"""
@@ -331,7 +326,7 @@ if st.session_state.tournament_started:
                 """, unsafe_allow_html=True)
                 
                 if is_admin:
-                    if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta B", key=f"win_B_{st.session_state.round_number}_{idx}"):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
                         for per in [tA_att, tA_port]:
                             per["last_result"] = 'L'
@@ -353,7 +348,7 @@ if st.session_state.tournament_started:
 st.markdown("---")
 
 # --- CLASSIFICA ---
-st.markdown("### 📋 Classifica Generale e Vite")
+st.markdown("### 📋 Classifica & Vite")
 if st.session_state.players:
     col_c1, col_c2 = st.columns(2)
     with col_c1:
