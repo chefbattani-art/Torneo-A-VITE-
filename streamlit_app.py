@@ -25,28 +25,62 @@ if "current_round_matches" not in st.session_state:
     st.session_state.current_round_matches = []
 if "round_number" not in st.session_state:
     st.session_state.round_number = 0
+if "show_podium" not in st.session_state:
+    st.session_state.show_podium = False
 
-# --- FUNZIONE DI ABBINAMENTO ---
+# --- FUNZIONE DI ABBINAMENTO (Vincitore + Perdente) ---
 def genera_abbinamenti():
     attivi = [p for p in st.session_state.players if not p["eliminated"]]
-    atts = [p for p in attivi if p["role"] == "attaccante"]
-    ports = [p for p in attivi if p["role"] == "portiere"]
     
-    random.shuffle(atts)
-    random.shuffle(ports)
-    
-    min_len = min(len(atts), len(ports))
-    coppie = []
-    for i in range(min_len):
-        coppie.append({"att": atts[i], "port": ports[i]})
-        
-    avanzi = atts[min_len:] + ports[min_len:]
-    
+    # Al primo turno facciamo tutto puramente casuale
     if st.session_state.round_number == 1:
-        random.shuffle(coppie)
-    else:
-        coppie.sort(key=lambda x: (x["att"]["last_result"] == 'W' or x["port"]["last_result"] == 'W'), reverse=True)
+        atts = [p for p in attivi if p["role"] == "attaccante"]
+        ports = [p for p in attivi if p["role"] == "portiere"]
+        random.shuffle(atts)
+        random.shuffle(ports)
         
+        min_len = min(len(atts), len(ports))
+        coppie = []
+        for i in range(min_len):
+            coppie.append({"att": atts[i], "port": ports[i]})
+        avanzi = atts[min_len:] + ports[min_len:]
+        random.shuffle(coppie)
+        
+    else:
+        # Turni successivi: Dividiamo per ruolo e per esito precedente (W vs L)
+        atts_w = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") == 'W']
+        atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") != 'W']
+        
+        ports_w = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") == 'W']
+        ports_l = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") != 'W']
+        
+        random.shuffle(atts_w)
+        random.shuffle(atts_l)
+        random.shuffle(ports_w)
+        random.shuffle(ports_l)
+        
+        coppie = []
+        # Creiamo coppie unendo un attaccante vincente con un portiere perdente (o viceversa)
+        # per formare squadre miste equilibrate W + L
+        
+        # Coppia tipo 1: Attaccante Vincitore + Portiere Perdente
+        while atts_w and ports_l:
+            coppie.append({"att": atts_w.pop(0), "port": ports_l.pop(0)})
+            
+        # Coppia tipo 2: Attaccante Perdente + Portiere Vincitore
+        while atts_l and ports_w:
+            coppie.append({"att": atts_l.pop(0), "port": ports_w.pop(0)})
+            
+        # Se avanzano altri giocatori dello stesso esito, li accoppiamo tra loro per esaurire la lista
+        while atts_w and ports_w:
+            coppie.append({"att": atts_w.pop(0), "port": ports_w.pop(0)})
+        while atts_l and ports_l:
+            coppie.append({"att": atts_l.pop(0), "port": ports_l.pop(0)})
+            
+        avanzi = atts_w + atts_l + ports_w + ports_l
+        random.shuffle(coppie)
+
+    # Formiamo le partite accoppiando le squadre
     partite = []
     i = 0
     while i < len(coppie) - 1:
@@ -135,6 +169,7 @@ if is_admin:
                 if st.button("🚀 Avvia Torneo e Genera 1° Turno", type="primary"):
                     st.session_state.tournament_started = True
                     st.session_state.round_number = 1
+                    st.session_state.show_podium = False
                     st.session_state.current_round_matches = genera_abbinamenti()
                     st.rerun()
             else:
@@ -147,6 +182,7 @@ if is_admin:
                 st.session_state.tournament_started = False
                 st.session_state.current_round_matches = []
                 st.session_state.round_number = 0
+                st.session_state.show_podium = False
                 for p in st.session_state.players:
                     p["lives"] = st.session_state.initial_lives
                     p["eliminated"] = False
@@ -170,6 +206,10 @@ if st.session_state.tournament_started:
     
     if not partite:
         st.success("🎉 Tutte le partite di questo turno sono state completate! Clicca su 'Genera Turno Successivo' dal pannello admin.")
+        if is_admin and not st.session_state.show_podium:
+            if st.button("🏆 Mostra Podio Finale"):
+                st.session_state.show_podium = True
+                st.rerun()
     else:
         num_biliardini = st.session_state.num_biliardini
         partite_in_corso = partite[:num_biliardini]
@@ -245,3 +285,24 @@ else:
             cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
             stato = "💀 ELIMINATO" if p["eliminated"] else cuori
             st.markdown(f"**{p['name']}** — {stato}")
+
+# --- PODIO FINALE (Visibile solo a fine torneo o quando richiesto) ---
+if st.session_state.show_podium:
+    st.divider()
+    st.subheader("🏆 Podio Ufficiale Finale")
+    
+    atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
+    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
+    
+    col_pod1, col_pod2 = st.columns(2)
+    with col_pod1:
+        st.markdown("### ⚽️ Top 4 Attaccanti")
+        for rank, p in enumerate(atts_sorted[:4]):
+            cuori = "❤️ " * p["lives"]
+            st.markdown(f"**{rank+1}°** {p['name']} — {cuori}")
+            
+    with col_pod2:
+        st.markdown("### 🥅 Top 4 Portieri")
+        for rank, p in enumerate(ports_sorted[:4]):
+            cuori = "❤️ " * p["lives"]
+            st.markdown(f"**{rank+1}°** {p['name']} — {cuori}")
