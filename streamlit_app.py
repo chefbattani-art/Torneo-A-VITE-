@@ -426,20 +426,25 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+lista_scelte = ["-- Mostra Tutto --"] + nomi_giocatori
+indice_default = 0
+if st.session_state.giocatore_selezionato in lista_scelte:
+    indice_default = lista_scelte.index(st.session_state.giocatore_selezionato)
+
 if nomi_giocatori:
     col_sel1, col_sel2 = st.columns([3, 2])
     
     with col_sel1:
         giocatore_selezionato = st.selectbox(
             "👤 Cerca il tuo nome:",
-            ["-- Mostra Tutto --"] + nomi_giocatori,
-            index=["-- Mostra Tutto --"] + nomi_giocatori.index(st.session_state.giocatore_selezionato) if st.session_state.giocatore_selezionato in nomi_giocatori else 0
+            lista_scelte,
+            index=indice_default
         )
     
     with col_sel2:
-        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True) # Spaziatura
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
         if giocatore_selezionato != "-- Mostra Tutto --":
-            etichetta_occhio = "👁️ Nascondi Vista Personale" if st.session_state.vista_personale_attiva else "👁️ Attiva Vista Personale"
+            etichetta_occhio = "👁️ Nascondi Vista" if st.session_state.vista_personale_attiva else "👁️ Vista Personale"
             if st.button(etichetta_occhio, use_container_width=True):
                 st.session_state.vista_personale_attiva = not st.session_state.vista_personale_attiva
                 st.query_params["focus"] = "true" if st.session_state.vista_personale_attiva else "false"
@@ -637,7 +642,6 @@ if st.session_state.tournament_started:
             partite_in_corso = partite[:num_biliardini]
             partite_in_coda = partite[num_biliardini:]
             
-            # Gestione Vista Personale tramite l'occhio (attiva solo se l'utente ha selezionato il nome e l'occhio è aperto)
             if giocatore_selezionato != "-- Mostra Tutto --" and st.session_state.vista_personale_attiva:
                 partite_filtrate = []
                 for idx, match in enumerate(partite_in_corso):
@@ -674,7 +678,6 @@ if st.session_state.tournament_started:
                         <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
                     """, unsafe_allow_html=True)
                     
-                    # Box Squadra A
                     st.markdown(f"""
                         <div class="team-box">
                             <div class="player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
@@ -715,7 +718,6 @@ if st.session_state.tournament_started:
                     
                     st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
                     
-                    # Box Squadra B
                     st.markdown(f"""
                         <div class="team-box">
                             <div class="player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
