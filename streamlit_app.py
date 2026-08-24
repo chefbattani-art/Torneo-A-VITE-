@@ -530,24 +530,22 @@ if st.session_state.tournament_started:
             use_container_width=True
         )
     else:
-        # Se ci sono partite rimaste nel turno corrente, controlla se il turno è esaurito
         data_turno = st.session_state.current_round_matches
         
         if data_turno and not data_turno.get("partite"):
-            # Turno concluso: avanza automaticamente al turno successivo!
             st.session_state.round_number += 1
             st.session_state.current_round_matches = genera_abbinamenti()
             salva_stato()
             st.rerun()
 
-        # Tasto rapido sempre visibile per tornare indietro in caso di errore nel turno precedente
+        # Tasto rapido protetto con .get() per evitare qualsiasi KeyError
         if is_admin and len(st.session_state.history) > 0:
             if st.button("↩️ Torna al Turno Precedente (Annulla Ultima Modifica)", type="secondary", use_container_width=True):
                 last_state = st.session_state.history.pop()
-                st.session_state.players = last_state["players"]
-                st.session_state.current_round_matches = last_state["current_round_matches"]
-                st.session_state.round_number = last_state["round_number"]
-                st.session_state.match_history = last_state["match_history"]
+                st.session_state.players = last_state.get("players", st.session_state.players)
+                st.session_state.current_round_matches = last_state.get("current_round_matches", {})
+                st.session_state.round_number = last_state.get("round_number", 1)
+                st.session_state.match_history = last_state.get("match_history", [])
                 salva_stato()
                 st.rerun()
 
@@ -620,7 +618,6 @@ if st.session_state.tournament_started:
                             
                             st.session_state.current_round_matches["partite"].pop(idx)
                             
-                            # Se l'ultima partita del turno è stata completata, avanza subito al turno successivo
                             if not st.session_state.current_round_matches["partite"]:
                                 st.session_state.round_number += 1
                                 st.session_state.current_round_matches = genera_abbinamenti()
@@ -662,7 +659,6 @@ if st.session_state.tournament_started:
                             
                             st.session_state.current_round_matches["partite"].pop(idx)
                             
-                            # Se l'ultima partita del turno è stata completata, avanza subito al turno successivo
                             if not st.session_state.current_round_matches["partite"]:
                                 st.session_state.round_number += 1
                                 st.session_state.current_round_matches = genera_abbinamenti()
