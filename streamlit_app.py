@@ -100,9 +100,9 @@ def genera_abbinamenti():
         random.shuffle(coppie)
     else:
         atts_w = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") == 'W']
-        atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result"] != 'W']
+        atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") != 'W']
         ports_w = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") == 'W']
-        ports_l = [p for p in attivi if p["role"] == "portiere" and p.get("last_result"] != 'W']
+        ports_l = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") != 'W']
         
         random.shuffle(atts_w)
         random.shuffle(atts_l)
