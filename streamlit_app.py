@@ -12,18 +12,21 @@ st.markdown("""
     .main { background-color: #0e1117; }
     
     /* Contenitore match */
-    .match-card { background-color: #161b22; padding: 10px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #30363d; }
+    .match-card { background-color: #161b22; padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #30363d; }
     
     /* Intestazione Biliardino Giallo/Dorato Marcato */
-    .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1em; font-weight: 900; padding: 5px; border-radius: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1em; font-weight: 900; padding: 6px; border-radius: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
     /* Layout flessibile forzato affiancato */
-    .match-flex { display: flex; align-items: center; justify-content: space-between; gap: 5px; width: 100%; }
+    .match-flex { display: flex; align-items: center; justify-content: space-between; gap: 5px; width: 100%; margin-bottom: 10px; }
     .team-container { flex: 1; text-align: center; }
     .vs-container { width: 40px; text-align: center; font-weight: 900; color: #f59e0b; font-size: 1.1em; }
 
     /* Box Coppia Verde Chiaro Marcato */
     .team-box { background-color: #047857; padding: 8px 4px; border-radius: 6px; border: 1px solid #34d399; color: #f3f4f6; font-size: 0.85em; min-height: 55px; display: flex; flex-direction: column; justify-content: center; }
+
+    /* Box Azzurro - Il pasto della vittoria */
+    .pasto-box { background: linear-gradient(135deg, #0284c7, #0369a1); color: #ffffff; text-align: center; font-size: 0.9em; font-weight: 700; padding: 8px; border-radius: 6px; border: 1px solid #38bdf8; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     </style>
 """, unsafe_allow_html=True)
 
@@ -240,7 +243,7 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Apertura card match
+            # Apertura card match con Box Azzurro per il pasto della vittoria
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
@@ -259,9 +262,10 @@ if st.session_state.tournament_started:
                             </div>
                         </div>
                     </div>
+                    <div class="pasto-box">🍔 Il pasto della vittoria 🍕</div>
             """, unsafe_allow_html=True)
             
-            # Pulsanti di vittoria affiancati sotto i box
+            # Pulsanti di vittoria affiancati sotto il box azzurro
             if is_admin:
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1:
