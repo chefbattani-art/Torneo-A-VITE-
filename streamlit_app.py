@@ -11,16 +11,16 @@ st.markdown("""
     <style>
     .main { background-color: #0e1117; }
     
-    /* Contenitore match */
-    .match-card { background-color: #161b22; padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #30363d; }
+    /* Contenitore match scuro */
+    .match-card { background-color: #161b22; padding: 16px; border-radius: 14px; margin-bottom: 24px; border: 1px solid #30363d; }
     
     /* Intestazione Biliardino Giallo/Dorato Marcato */
-    .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1em; font-weight: 900; padding: 6px; border-radius: 6px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1.05em; font-weight: 900; padding: 8px; border-radius: 8px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Box Coppia Verde Chiaro Marcato */
-    .team-box { background-color: #047857; padding: 8px 4px; border-radius: 6px; border: 1px solid #34d399; color: #f3f4f6; font-size: 0.85em; min-height: 55px; display: flex; flex-direction: column; justify-content: center; text-align: center; margin-bottom: 8px; }
+    /* Box Coppia Verde Interno */
+    .team-box { background-color: #047857; padding: 12px 8px; border-radius: 8px; border: 1px solid #34d399; color: #f3f4f6; font-size: 0.9em; text-align: center; margin-bottom: 10px; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
 
-    /* Stile personalizzato per i pulsanti di vittoria */
+    /* Stile personalizzato per i pulsanti di vittoria dentro i box verdi */
     .stButton > button {
         width: 100%;
         background-color: #0284c7 !important;
@@ -100,9 +100,9 @@ def genera_abbinamenti():
         random.shuffle(coppie)
     else:
         atts_w = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") == 'W']
-        atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") != 'W']
+        atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result"] != 'W']
         ports_w = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") == 'W']
-        ports_l = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") != 'W']
+        ports_l = [p for p in attivi if p["role"] == "portiere" and p.get("last_result"] != 'W']
         
         random.shuffle(atts_w)
         random.shuffle(atts_l)
@@ -251,13 +251,13 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Apertura card match
+            # Apertura card match scura
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
             """, unsafe_allow_html=True)
             
-            # Colonne per mettere Squadra A (sinistra), VS (centro) e Squadra B (destra)
+            # Struttura a 3 colonne dentro la card: Squadra A (sx), VS (centro), Squadra B (dx)
             col_teamA, col_vs, col_teamB = st.columns([5, 1, 5])
             
             with col_teamA:
@@ -268,9 +268,9 @@ if st.session_state.tournament_started:
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # Pulsante di vittoria sotto la squadra A (a sinistra)
+                # Pulsante dentro il blocco della squadra A
                 if is_admin:
-                    if st.button("🏆 Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}"):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
                         for per in [tB_att, tB_port]:
                             per["last_result"] = 'L'
@@ -281,7 +281,7 @@ if st.session_state.tournament_started:
                         st.rerun()
                         
             with col_vs:
-                st.markdown("<div style='text-align: center; font-weight: 900; color: #f59e0b; padding-top: 22px; font-size: 1.1em;'>VS</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align: center; font-weight: 900; color: #f59e0b; padding-top: 35px; font-size: 1.1em;'>VS</div>", unsafe_allow_html=True)
                 
             with col_teamB:
                 st.markdown(f"""
@@ -291,9 +291,9 @@ if st.session_state.tournament_started:
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # Pulsante di vittoria sotto la squadra B (a destra)
+                # Pulsante dentro il blocco della squadra B
                 if is_admin:
-                    if st.button("🏆 Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}"):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
                         for per in [tA_att, tA_port]:
                             per["last_result"] = 'L'
