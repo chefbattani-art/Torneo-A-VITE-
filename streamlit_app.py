@@ -10,17 +10,20 @@ st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽�
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    .stButton>button { width: 100%; border-radius: 6px; font-weight: bold; background-color: #0284c7; color: white; border: none; padding: 8px; font-size: 0.9em; }
-    .stButton>button:hover { background-color: #0369a1; color: white; }
     
-    /* Contenitore match compatto */
-    .match-card { background-color: #161b22; padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #30363d; }
+    /* Contenitore match */
+    .match-card { background-color: #161b22; padding: 10px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #30363d; }
     
     /* Intestazione Biliardino Giallo/Dorato Marcato */
-    .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1.1em; font-weight: 900; padding: 6px; border-radius: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    
-    /* Box Coppia Verde Più Chiaro Marcato */
-    .team-box { background-color: #047857; padding: 10px; border-radius: 8px; border: 1px solid #34d399; text-align: center; color: #f3f4f6; height: 100%; }
+    .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1em; font-weight: 900; padding: 5px; border-radius: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Layout flessibile forzato affiancato (anche su mobile) */
+    .match-flex { display: flex; align-items: center; justify-content: space-between; gap: 5px; width: 100%; }
+    .team-container { flex: 1; text-align: center; }
+    .vs-container { width: 40px; text-align: center; font-weight: 900; color: #f59e0b; font-size: 1.1em; }
+
+    /* Box Coppia Verde Chiaro Marcato */
+    .team-box { background-color: #047857; padding: 8px 4px; border-radius: 6px; border: 1px solid #34d399; color: #f3f4f6; font-size: 0.85em; min-height: 55px; display: flex; flex-direction: column; justify-content: center; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -237,24 +240,32 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Apertura card singola della partita
+            # Apertura card match
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
+                    <div class="match-flex">
+                        <div class="team-container">
+                            <div class="team-box">
+                                <div>⚽️ <b>{tA_att['name']}</b></div>
+                                <div>🥅 <b>{tA_port['name']}</b></div>
+                            </div>
+                        </div>
+                        <div class="vs-container">VS</div>
+                        <div class="team-container">
+                            <div class="team-box">
+                                <div>⚽️ <b>{tB_att['name']}</b></div>
+                                <div>🥅 <b>{tB_port['name']}</b></div>
+                            </div>
+                        </div>
+                    </div>
             """, unsafe_allow_html=True)
             
-            # Layout affiancato: Coppia A | VS | Coppia B
-            col_m1, col_mvs, col_m2 = st.columns([5, 1, 5])
-            
-            with col_m1:
-                st.markdown(f"""
-                    <div class="team-box">
-                        <div style="font-size: 0.95em; margin-bottom: 4px;">⚽️ <b>{tA_att['name']}</b></div>
-                        <div style="font-size: 0.95em;">🥅 <b>{tA_port['name']}</b></div>
-                    </div>
-                """, unsafe_allow_html=True)
-                if is_admin:
-                    if st.button("🏆 Segna Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}"):
+            # Pulsanti di vittoria affiancati sotto i box
+            if is_admin:
+                col_btn1, col_btn2 = st.columns(2)
+                with col_btn1:
+                    if st.button("🏆 Voto A", key=f"win_A_{st.session_state.round_number}_{idx}"):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
                         for per in [tB_att, tB_port]:
                             per["last_result"] = 'L'
@@ -263,19 +274,8 @@ if st.session_state.tournament_started:
                         st.session_state.current_round_matches["partite"].pop(idx)
                         salva_stato()
                         st.rerun()
-
-            with col_mvs:
-                st.markdown("<h4 style='text-align: center; color: #f59e0b; margin-top: 22px;'>VS</h4>", unsafe_allow_html=True)
-                
-            with col_m2:
-                st.markdown(f"""
-                    <div class="team-box">
-                        <div style="font-size: 0.95em; margin-bottom: 4px;">⚽️ <b>{tB_att['name']}</b></div>
-                        <div style="font-size: 0.95em;">🥅 <b>{tB_port['name']}</b></div>
-                    </div>
-                """, unsafe_allow_html=True)
-                if is_admin:
-                    if st.button("🏆 Segna Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                with col_btn2:
+                    if st.button("🏆 Voto B", key=f"win_B_{st.session_state.round_number}_{idx}"):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
                         for per in [tA_att, tA_port]:
                             per["last_result"] = 'L'
@@ -316,7 +316,7 @@ if st.session_state.show_podium:
     st.divider()
     st.subheader("🏆 Podio Ufficiale Finale")
     atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
-    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
+    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"], reverse=True))
     
     col_pod1, col_pod2 = st.columns(2)
     with col_pod1:
