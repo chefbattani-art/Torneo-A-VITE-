@@ -17,7 +17,7 @@ st.markdown("""
     /* Intestazione Biliardino Giallo/Dorato Marcato */
     .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1em; font-weight: 900; padding: 5px; border-radius: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Layout flessibile forzato affiancato (anche su mobile) */
+    /* Layout flessibile forzato affiancato */
     .match-flex { display: flex; align-items: center; justify-content: space-between; gap: 5px; width: 100%; }
     .team-container { flex: 1; text-align: center; }
     .vs-container { width: 40px; text-align: center; font-weight: 900; color: #f59e0b; font-size: 1.1em; }
@@ -316,7 +316,7 @@ if st.session_state.show_podium:
     st.divider()
     st.subheader("🏆 Podio Ufficiale Finale")
     atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
-    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"], reverse=True))
+    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
     
     col_pod1, col_pod2 = st.columns(2)
     with col_pod1:
