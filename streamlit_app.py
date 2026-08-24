@@ -51,20 +51,14 @@ st.markdown("""
         color: #ecfdf5;
         box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
-    
-    .team-title {
-        font-size: 0.75em;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #34d399;
-        font-weight: 700;
-        margin-bottom: 4px;
-    }
 
     .player-names {
-        font-size: 0.95em;
-        font-weight: 600;
+        font-size: 1.05em;
+        font-weight: 800;
         line-height: 1.4;
+        text-transform: uppercase;
+        color: #facc15 !important;
+        letter-spacing: 0.5px;
     }
 
     /* Scritta VS centrale */
@@ -123,7 +117,7 @@ st.markdown("""
         padding: 8px 12px;
         border-radius: 8px;
         margin-bottom: 8px;
-        font-size: 0.9em;
+        font-size: 0.95em;
         border: 1px solid #334155;
     }
     
@@ -131,6 +125,12 @@ st.markdown("""
         background: #111827;
         opacity: 0.6;
         border: 1px solid #1f2937;
+    }
+    
+    .rank-name {
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #facc15;
     }
     
     div.block-container {
@@ -327,8 +327,8 @@ if st.session_state.tournament_started:
     
     data_turno = st.session_state.current_round_matches
     if data_turno and data_turno.get("pass"):
-        pass_text = ", ".join([f"{'⚽️' if p['role']=='attaccante' else '🥅'} {p['name']}" for p in data_turno["pass"]])
-        st.info(f"💚 **Riposano (Pass):** {pass_text}")
+        pass_names = ", ".join([f"{p['name'].upper()}" for p in data_turno["pass"]])
+        st.info(f"💚 **Riposano (Pass):** {pass_names}")
 
     partite = data_turno.get("partite", []) if data_turno else []
     
@@ -360,7 +360,7 @@ if st.session_state.tournament_started:
                 # COPPIA A
                 st.markdown(f"""
                     <div class="team-box">
-                        <div class="player-names">⚽️ {tA_att['name']} &nbsp;|&nbsp; 🥅 {tA_port['name']}</div>
+                        <div class="player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
@@ -381,7 +381,7 @@ if st.session_state.tournament_started:
                 # COPPIA B
                 st.markdown(f"""
                     <div class="team-box">
-                        <div class="player-names">⚽️ {tB_att['name']} &nbsp;|&nbsp; 🥅 {tB_port['name']}</div>
+                        <div class="player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
@@ -401,7 +401,7 @@ if st.session_state.tournament_started:
             for q_idx, q_match in enumerate(partite_in_coda):
                 qa, qp = q_match["teamA"]
                 qb, qpp = q_match["teamB"]
-                st.warning(f"Coda #{q_idx+1}: [⚽️ {qa['name']} & 🥅 {qp['name']}] vs [⚽️ {qb['name']} & 🥅 {qpp['name']}]")
+                st.warning(f"Coda #{q_idx+1}: [⚽️ {qa['name'].upper()} & 🥅 {qp['name'].upper()}] vs [⚽️ {qb['name'].upper()} & 🥅 {qpp['name'].upper()}]")
 
 st.markdown("---")
 
@@ -420,7 +420,7 @@ if st.session_state.players:
             stato_txt = "💀 ELIMINATO" if p["eliminated"] else cuori
             st.markdown(f"""
                 <div class="{css_class}">
-                    <span><b>{p['name']}</b></span>
+                    <span class="rank-name">{p['name']}</span>
                     <span>{stato_txt}</span>
                 </div>
             """, unsafe_allow_html=True)
@@ -437,7 +437,7 @@ if st.session_state.players:
             stato_txt = "💀 ELIMINATO" if p["eliminated"] else cuori
             st.markdown(f"""
                 <div class="{css_class}">
-                    <span><b>{p['name']}</b></span>
+                    <span class="rank-name">{p['name']}</span>
                     <span>{stato_txt}</span>
                 </div>
             """, unsafe_allow_html=True)
@@ -453,8 +453,8 @@ if st.session_state.show_podium:
     with col_pod1:
         st.markdown("#### ⚽️ Top 4 Attaccanti")
         for rank, p in enumerate(atts_sorted[:4]):
-            st.markdown(f"**{rank+1}°** {p['name']} — {'❤️ ' * p['lives']}")
+            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {'❤️ ' * p['lives']}", unsafe_allow_html=True)
     with col_pod2:
         st.markdown("#### 🥅 Top 4 Portieri")
         for rank, p in enumerate(ports_sorted[:4]):
-            st.markdown(f"**{rank+1}°** {p['name']} — {'❤️ ' * p['lives']}")
+            st.markdown(f"**{rank+1}°** <span style='color: #facc15; font-weight: bold;'>{p['name'].upper()}</span> — {'❤️ ' * p['lives']}", unsafe_allow_html=True)
