@@ -18,9 +18,9 @@ st.markdown("""
     .biliardino-box { background: linear-gradient(135deg, #f59e0b, #d97706); color: #111827; text-align: center; font-size: 1em; font-weight: 900; padding: 6px; border-radius: 6px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
     /* Box Coppia Verde Chiaro Marcato */
-    .team-box { background-color: #047857; padding: 8px 4px; border-radius: 6px; border: 1px solid #34d399; color: #f3f4f6; font-size: 0.85em; min-height: 55px; display: flex; flex-direction: column; justify-content: center; text-align: center; margin-bottom: 8px; }
+    .team-box { background-color: #047857; padding: 8px 4px; border-radius: 6px; border: 1px solid #34d399; color: #f3f4f6; font-size: 0.85em; min-height: 55px; display: flex; flex-direction: column; justify-content: center; text-align: center; }
 
-    /* Stile personalizzato per i pulsanti di vittoria azzurri */
+    /* Stile personalizzato per i pulsanti di vittoria */
     .stButton > button {
         width: 100%;
         background-color: #0284c7 !important;
@@ -251,13 +251,12 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Apertura card match
+            # Apertura card match con le squadre affiancate e il VS in mezzo
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
             """, unsafe_allow_html=True)
             
-            # Utilizziamo le colonne di Streamlit per affiancare i due blocchi squadra/pulsante
             col_teamA, col_vs, col_teamB = st.columns([5, 1, 5])
             
             with col_teamA:
@@ -267,21 +266,8 @@ if st.session_state.tournament_started:
                         <div>🥅 <b>{tA_port['name']}</b></div>
                     </div>
                 """, unsafe_allow_html=True)
-                
-                if is_admin:
-                    if st.button("🏆 Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}"):
-                        for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                        for per in [tB_att, tB_port]:
-                            per["last_result"] = 'L'
-                            per["lives"] = max(0, per["lives"] - 1)
-                            if per["lives"] == 0: per["eliminated"] = True
-                        st.session_state.current_round_matches["partite"].pop(idx)
-                        salva_stato()
-                        st.rerun()
-                        
             with col_vs:
-                st.markdown("<div style='text-align: center; font-weight: 900; color: #f59e0b; padding-top: 20px; font-size: 1.1em;'>VS</div>", unsafe_allow_html=True)
-                
+                st.markdown("<div style='text-align: center; font-weight: 900; color: #f59e0b; padding-top: 15px; font-size: 1.1em;'>VS</div>", unsafe_allow_html=True)
             with col_teamB:
                 st.markdown(f"""
                     <div class="team-box">
@@ -290,18 +276,29 @@ if st.session_state.tournament_started:
                     </div>
                 """, unsafe_allow_html=True)
                 
-                if is_admin:
-                    if st.button("🏆 Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}"):
-                        for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                        for per in [tA_att, tA_port]:
-                            per["last_result"] = 'L'
-                            per["lives"] = max(0, per["lives"] - 1)
-                            if per["lives"] == 0: per["eliminated"] = True
-                        st.session_state.current_round_matches["partite"].pop(idx)
-                        salva_stato()
-                        st.rerun()
-                        
             st.markdown("</div>", unsafe_allow_html=True)
+            
+            # Pulsanti di vittoria uno sotto l'altro posizionati sotto la card della partita
+            if is_admin:
+                if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}"):
+                    for v in [tA_att, tA_port]: v["last_result"] = 'W'
+                    for per in [tB_att, tB_port]:
+                        per["last_result"] = 'L'
+                        per["lives"] = max(0, per["lives"] - 1)
+                        if per["lives"] == 0: per["eliminated"] = True
+                    st.session_state.current_round_matches["partite"].pop(idx)
+                    salva_stato()
+                    st.rerun()
+                    
+                if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                    for v in [tB_att, tB_port]: v["last_result"] = 'W'
+                    for per in [tA_att, tA_port]:
+                        per["last_result"] = 'L'
+                        per["lives"] = max(0, per["lives"] - 1)
+                        if per["lives"] == 0: per["eliminated"] = True
+                    st.session_state.current_round_matches["partite"].pop(idx)
+                    salva_stato()
+                    st.rerun()
             
         if partite_in_coda:
             st.markdown("### ⏳ In Coda")
