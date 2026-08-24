@@ -32,6 +32,19 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
 
+    /* Avviso Informativo Rosso */
+    .info-red-box {
+        background: linear-gradient(135deg, #7c2d12, #991b1b);
+        border: 2px solid #ef4444;
+        border-radius: 12px;
+        padding: 14px 18px;
+        color: #fee2e2;
+        font-weight: 600;
+        font-size: 0.95em;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
     /* Avviso Ultima Partita */
     .last-match-warning {
         background: linear-gradient(135deg, #7c2d12, #c2410c);
@@ -389,14 +402,64 @@ if is_admin:
 else:
     st.sidebar.info("Modalità Spettatore / Giocatore")
 
+# --- TITOLO PRINCIPALE ---
 st.title("⚽️ Torneo a Vite")
 
-# Seleziona Giocatore per vista dedicata
-if st.session_state.players and not is_admin:
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### 👤 Cerca la tua Partita")
-    nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players])))
-    giocatore_selezionato = st.sidebar.selectbox("Seleziona il tuo nome:", ["-- Mostra Tutto --"] + nomi_giocatori)
+# --- GESTIONE MEMORIA PERSISTENTE NOME GIOCATORE ---
+nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
+query_params = st.query_params
+nome_url = query_params.get("giocatore", "-- Mostra Tutto --")
+
+if "giocatore_selezionato" not in st.session_state:
+    if nome_url in ["-- Mostra Tutto --"] + nomi_giocatori:
+        st.session_state.giocatore_selezionato = nome_url
+    else:
+        st.session_state.giocatore_selezionato = "-- Mostra Tutto --"
+
+if "vista_personale_attiva" not in st.session_state:
+    st.session_state.vista_personale_attiva = (query_params.get("focus", "false") == "true")
+
+# --- TENDINA INFORMATIVA ROSSA E SELEZIONE SOTTO AL TITOLO ---
+st.markdown("""
+    <div class="info-red-box">
+        ⚠️ <b>AREA GIOCATORI:</b> Seleziona il tuo nome qui sotto. Puoi usare l'icona dell'occhio <b>👁️</b> per passare istantaneamente dalla visuale dell'intero torneo alla tua partita personale per registrare la vittoria! La tua preferenza rimarrà memorizzata.
+    </div>
+""", unsafe_allow_html=True)
+
+if nomi_giocatori:
+    col_sel1, col_sel2 = st.columns([3, 2])
+    
+    with col_sel1:
+        giocatore_selezionato = st.selectbox(
+            "👤 Cerca il tuo nome:",
+            ["-- Mostra Tutto --"] + nomi_giocatori,
+            index=["-- Mostra Tutto --"] + nomi_giocatori.index(st.session_state.giocatore_selezionato) if st.session_state.giocatore_selezionato in nomi_giocatori else 0
+        )
+    
+    with col_sel2:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True) # Spaziatura
+        if giocatore_selezionato != "-- Mostra Tutto --":
+            etichetta_occhio = "👁️ Nascondi Vista Personale" if st.session_state.vista_personale_attiva else "👁️ Attiva Vista Personale"
+            if st.button(etichetta_occhio, use_container_width=True):
+                st.session_state.vista_personale_attiva = not st.session_state.vista_personale_attiva
+                st.query_params["focus"] = "true" if st.session_state.vista_personale_attiva else "false"
+                st.rerun()
+        else:
+            st.session_state.vista_personale_attiva = False
+            if "focus" in st.query_params:
+                del st.query_params["focus"]
+
+    if giocatore_selezionato != st.session_state.giocatore_selezionato:
+        st.session_state.giocatore_selezionato = giocatore_selezionato
+        if giocatore_selezionato == "-- Mostra Tutto --":
+            st.session_state.vista_personale_attiva = False
+            if "giocatore" in st.query_params:
+                del st.query_params["giocatore"]
+            if "focus" in st.query_params:
+                del st.query_params["focus"]
+        else:
+            st.query_params["giocatore"] = giocatore_selezionato
+        st.rerun()
 else:
     giocatore_selezionato = "-- Mostra Tutto --"
 
@@ -547,7 +610,6 @@ if st.session_state.tournament_started:
             salva_stato()
             st.rerun()
 
-        # Tasto rapido protetto con .get() per tornare indietro se admin
         if is_admin and len(st.session_state.history) > 0:
             if st.button("↩️ Torna al Turno Precedente (Annulla Ultima Modifica)", type="secondary", use_container_width=True):
                 last_state = st.session_state.history.pop()
@@ -575,9 +637,8 @@ if st.session_state.tournament_started:
             partite_in_corso = partite[:num_biliardini]
             partite_in_coda = partite[num_biliardini:]
             
-            # Filtro se il giocatore ha selezionato il proprio nome dalla barra laterale
-            if giocatore_selezionato != "-- Mostra Tutto --":
-                # Filtra le partite in corso che includono il giocatore
+            # Gestione Vista Personale tramite l'occhio (attiva solo se l'utente ha selezionato il nome e l'occhio è aperto)
+            if giocatore_selezionato != "-- Mostra Tutto --" and st.session_state.vista_personale_attiva:
                 partite_filtrate = []
                 for idx, match in enumerate(partite_in_corso):
                     tA_att, tA_port = match["teamA"]
@@ -587,9 +648,9 @@ if st.session_state.tournament_started:
                         partite_filtrate.append((idx, match))
                 
                 if not partite_filtrate:
-                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non ha una partita attiva in questo turno (o è in pausa/riposo).")
+                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non ha una partita attiva in questo turno (o è in pausa/riposo). Clicca nuovamente sull'occhio 👁️ per visualizzare l'intero torneo.")
                 else:
-                    st.markdown(f"#### 🎯 Partita di: {giocatore_selezionato.upper()}")
+                    st.markdown(f"#### 🎯 Partita di: {giocatore_selezionato.upper()} (Vista Personale 👁️)")
                 
                 iter_partite = partite_filtrate
             else:
@@ -600,7 +661,7 @@ if st.session_state.tournament_started:
                             ⚠️ ULTIMA PARTITA DI QUESTO TURNO! Assegnando la vittoria, il torneo passerà subito al turno successivo.
                         </div>
                     """, unsafe_allow_html=True)
-                st.markdown("#### 🏟️ Partite in Corso")
+                st.markdown("#### 🏟️ Partite in Corso (Panoramica Torneo)")
                 iter_partite = [(idx, match) for idx, match in enumerate(partite_in_corso)]
 
             for idx, match in iter_partite:
@@ -613,88 +674,87 @@ if st.session_state.tournament_started:
                         <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
                     """, unsafe_allow_html=True)
                     
+                    # Box Squadra A
                     st.markdown(f"""
                         <div class="team-box">
                             <div class="player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    # Chiunque può inserire il risultato se sta giocando o se è admin
-                    if is_admin or giocatore_selezionato != "-- Mostra Tutto --":
-                        if st.button("🏆 Assegna Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
-                            salva_snapshot()
-                            
-                            match_record = {
-                                "turno": st.session_state.round_number,
-                                "partite": [{
-                                    "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
-                                    "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
-                                    "vincitore": f"Vittoria Squadra A (⚽️ {tA_att['name'].upper()} & 🥅 {tA_port['name'].upper()})"
-                                }]
-                            }
-                            found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
-                            if found_h:
-                                found_h["partite"].append(match_record["partite"][0])
-                            else:
-                                st.session_state.match_history.append(match_record)
+                    if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
+                        salva_snapshot()
+                        
+                        match_record = {
+                            "turno": st.session_state.round_number,
+                            "partite": [{
+                                "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
+                                "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
+                                "vincitore": f"Vittoria Squadra A (⚽️ {tA_att['name'].upper()} & 🥅 {tA_port['name'].upper()})"
+                            }]
+                        }
+                        found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
+                        if found_h:
+                            found_h["partite"].append(match_record["partite"][0])
+                        else:
+                            st.session_state.match_history.append(match_record)
 
-                            for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                            for per in [tB_att, tB_port]:
-                                per["last_result"] = 'L'
-                                per["lives"] = max(0, per["lives"] - 1)
-                                if per["lives"] == 0: per["eliminated"] = True
+                        for v in [tA_att, tA_port]: v["last_result"] = 'W'
+                        for per in [tB_att, tB_port]:
+                            per["last_result"] = 'L'
+                            per["lives"] = max(0, per["lives"] - 1)
+                            if per["lives"] == 0: per["eliminated"] = True
+                        
+                        st.session_state.current_round_matches["partite"].pop(idx)
+                        
+                        if not st.session_state.current_round_matches["partite"]:
+                            st.session_state.round_number += 1
+                            st.session_state.current_round_matches = genera_abbinamenti()
                             
-                            st.session_state.current_round_matches["partite"].pop(idx)
-                            
-                            if not st.session_state.current_round_matches["partite"]:
-                                st.session_state.round_number += 1
-                                st.session_state.current_round_matches = genera_abbinamenti()
-                                
-                            salva_stato()
-                            st.rerun()
+                        salva_stato()
+                        st.rerun()
                     
                     st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
                     
+                    # Box Squadra B
                     st.markdown(f"""
                         <div class="team-box">
                             <div class="player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if is_admin or giocatore_selezionato != "-- Mostra Tutto --":
-                        if st.button("🏆 Assegna Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
-                            salva_snapshot()
-                            
-                            match_record = {
-                                "turno": st.session_state.round_number,
-                                "partite": [{
-                                    "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
-                                    "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
-                                    "vincitore": f"Vittoria Squadra B (⚽️ {tB_att['name'].upper()} & 🥅 {tB_port['name'].upper()})"
-                                }]
-                            }
-                            found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
-                            if found_h:
-                                found_h["partite"].append(match_record["partite"][0])
-                            else:
-                                st.session_state.match_history.append(match_record)
+                    if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
+                        salva_snapshot()
+                        
+                        match_record = {
+                            "turno": st.session_state.round_number,
+                            "partite": [{
+                                "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
+                                "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
+                                "vincitore": f"Vittoria Squadra B (⚽️ {tB_att['name'].upper()} & 🥅 {tB_port['name'].upper()})"
+                            }]
+                        }
+                        found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
+                        if found_h:
+                            found_h["partite"].append(match_record["partite"][0])
+                        else:
+                            st.session_state.match_history.append(match_record)
 
-                            for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                            for per in [tA_att, tA_port]:
-                                per["last_result"] = 'L'
-                                per["lives"] = max(0, per["lives"] - 1)
-                                if per["lives"] == 0: per["eliminated"] = True
+                        for v in [tB_att, tB_port]: v["last_result"] = 'W'
+                        for per in [tA_att, tA_port]:
+                            per["last_result"] = 'L'
+                            per["lives"] = max(0, per["lives"] - 1)
+                            if per["lives"] == 0: per["eliminated"] = True
+                        
+                        st.session_state.current_round_matches["partite"].pop(idx)
+                        
+                        if not st.session_state.current_round_matches["partite"]:
+                            st.session_state.round_number += 1
+                            st.session_state.current_round_matches = genera_abbinamenti()
                             
-                            st.session_state.current_round_matches["partite"].pop(idx)
-                            
-                            if not st.session_state.current_round_matches["partite"]:
-                                st.session_state.round_number += 1
-                                st.session_state.current_round_matches = genera_abbinamenti()
-                                
-                            salva_stato()
-                            st.rerun()
+                        salva_stato()
+                        st.rerun()
                 
-            if partite_in_coda and giocatore_selezionato == "-- Mostra Tutto --":
+            if partite_in_coda and not st.session_state.vista_personale_attiva:
                 st.markdown("#### ⏳ In Coda")
                 for q_idx, q_match in enumerate(partite_in_coda):
                     qa, qp = q_match["teamA"]
@@ -705,12 +765,13 @@ st.markdown("---")
 
 # --- CLASSIFICA & VITE AGGIORNATA ---
 if st.session_state.players:
+    st.markdown("### 📊 Andamento Torneo & Vite Giocatori")
     col_c1, col_c2 = st.columns(2)
     
     with col_c1:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">⚽️⚽️⚽️ VITE ATTACCANTI ⚽️⚽️⚽️</div>
+                <div class="rank-header">⚽️ VITE ATTACCANTI ⚽️</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             cuori = "❤️ " * p["lives"]
@@ -731,7 +792,7 @@ if st.session_state.players:
     with col_c2:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">🥅🥅🥅 VITE PORTIERI 🥅🥅🥅</div>
+                <div class="rank-header">🥅 VITE PORTIERI 🥅</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             cuori = "❤️ " * p["lives"]
