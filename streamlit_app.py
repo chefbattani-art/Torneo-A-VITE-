@@ -6,69 +6,69 @@ import os
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO CSS ULTRASCOMPATTO ---
+# --- STILE GRAFICO CSS ULTRASCOMPATTO & CENTRATO ---
 st.markdown("""
     <style>
     .main { background-color: #0b0f19; }
     
-    /* Contenitore match ridotto al minimo */
     .match-card { 
         background: linear-gradient(145deg, #131b2e, #0d1322); 
-        padding: 8px 10px; 
+        padding: 10px; 
         border-radius: 10px; 
-        margin-bottom: 8px; 
+        margin-bottom: 10px; 
         border: 1px solid #1e293b;
     }
     
-    /* Header Biliardino Sottile */
     .biliardino-box { 
         background: linear-gradient(90deg, #f59e0b, #d97706); 
         color: #0f172a; 
         text-align: center; 
-        font-size: 0.78em; 
+        font-size: 0.8em; 
         font-weight: 800; 
-        padding: 2px; 
+        padding: 3px; 
         border-radius: 4px; 
-        margin-bottom: 6px; 
+        margin-bottom: 8px; 
         text-transform: uppercase; 
         letter-spacing: 1px; 
     }
 
-    /* Box Squadra Compatto */
     .team-box { 
         background-color: #064e3b; 
-        padding: 6px 4px; 
+        padding: 8px; 
         border-radius: 6px; 
         border: 1px solid #059669; 
         color: #ecfdf5; 
-        font-size: 0.8em; 
+        font-size: 0.82em; 
         text-align: center; 
-        margin-bottom: 4px; 
+        margin-bottom: 6px; 
     }
     
     .player-name {
         font-weight: 600;
-        line-height: 1.2;
+        line-height: 1.3;
     }
 
-    /* Pulsante Vittoria Centrato e Ottimizzato */
+    /* Riduciamo i margini vuoti sopra/sotto i bottoni di Streamlit */
+    .stButton {
+        margin-top: -4px !important;
+        margin-bottom: 0px !important;
+    }
+
     .stButton > button {
-        width: 100%;
+        width: 100% !important;
         background: linear-gradient(135deg, #0284c7, #0369a1) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         border: 1px solid #38bdf8 !important;
         border-radius: 5px !important;
-        padding: 2px 0px !important;
+        padding: 4px 0px !important;
         font-size: 0.75em !important;
-        margin-top: 0px !important;
     }
     .stButton > button:hover {
         background: linear-gradient(135deg, #0369a1, #075985) !important;
         border-color: #7dd3fc !important;
     }
     
-    /* Riduzione generale spaziatura Streamlit */
     div.block-container {
         padding-top: 1rem;
         padding-bottom: 1.5rem;
@@ -108,7 +108,6 @@ def carica_stato():
             return False
     return False
 
-# --- INIZIALIZZAZIONE STATO PERSISTENTE ---
 if "initialized" not in st.session_state:
     st.session_state.initialized = True
     if not carica_stato():
@@ -120,7 +119,6 @@ if "initialized" not in st.session_state:
         st.session_state.round_number = 0
         st.session_state.show_podium = False
 
-# --- FUNZIONE ABBINAMENTI ---
 def genera_abbinamenti():
     attivi = [p for p in st.session_state.players if not p["eliminated"]]
     
@@ -172,7 +170,6 @@ def genera_abbinamenti():
     res = {"partite": partite, "pass": avanzi}
     return res
 
-# --- BARRA LATERALE ADMIN ---
 st.sidebar.title("🔐 Accesso Admin")
 admin_code = st.sidebar.text_input("Codice Amministratore", type="password", placeholder="Inserisci 0000")
 is_admin = (admin_code == "0000")
@@ -180,14 +177,12 @@ is_admin = (admin_code == "0000")
 if is_admin:
     st.sidebar.success("Modo Amministratore Attivo 🔓")
 else:
-    st.sidebar.info("Modalità Spettatore (Sola lettura)")
+    st.sidebar.info("Modalità Spettatore")
 
 st.title("⚽️ Torneo a Vite")
 
-# --- PANNELLO CONFIGURAZIONE ---
 if is_admin:
     with st.expander("⚙️ Pannello Configurazione & Gestione", expanded=not st.session_state.tournament_started):
-        
         if not st.session_state.tournament_started:
             col_conf1, col_conf2 = st.columns(2)
             with col_conf1:
@@ -258,7 +253,6 @@ if is_admin:
 
 st.markdown("---")
 
-# --- VISUALIZZAZIONE PARTITE ---
 if st.session_state.tournament_started:
     st.markdown(f"### ⚔️ Turno N° {st.session_state.round_number}")
     
@@ -287,7 +281,6 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
-            # Card contenitore match ridotta
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
@@ -304,7 +297,7 @@ if st.session_state.tournament_started:
                 """, unsafe_allow_html=True)
                 
                 if is_admin:
-                    if st.button("🏆 Vinta A", key=f"win_A_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}"):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
                         for per in [tB_att, tB_port]:
                             per["last_result"] = 'L'
@@ -315,7 +308,7 @@ if st.session_state.tournament_started:
                         st.rerun()
                         
             with col_vs:
-                st.markdown("<div style='text-align: center; font-weight: 800; color: #f59e0b; padding-top: 15px; font-size: 0.85em;'>VS</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align: center; font-weight: 800; color: #f59e0b; padding-top: 18px; font-size: 0.85em;'>VS</div>", unsafe_allow_html=True)
                 
             with col_teamB:
                 st.markdown(f"""
@@ -326,7 +319,7 @@ if st.session_state.tournament_started:
                 """, unsafe_allow_html=True)
                 
                 if is_admin:
-                    if st.button("🏆 Vinta B", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}"):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
                         for per in [tA_att, tA_port]:
                             per["last_result"] = 'L'
@@ -347,7 +340,6 @@ if st.session_state.tournament_started:
 
 st.markdown("---")
 
-# --- CLASSIFICA ---
 st.markdown("### 📋 Classifica & Vite")
 if st.session_state.players:
     col_c1, col_c2 = st.columns(2)
@@ -364,7 +356,6 @@ if st.session_state.players:
             stato = "💀 ELIMINATO" if p["eliminated"] else cuori
             st.markdown(f"**{p['name']}** — {stato}")
 
-# --- PODIO FINALE ---
 if st.session_state.show_podium:
     st.markdown("---")
     st.markdown("### 🏆 Podio Ufficiale Finale")
