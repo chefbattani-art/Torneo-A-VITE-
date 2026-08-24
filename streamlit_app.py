@@ -625,6 +625,13 @@ if st.session_state.tournament_started:
                 salva_stato()
                 st.rerun()
 
+        # --- MESSAGGIO IMPORTANTE INSERITO TRA LA SELEZIONE E IL TURNO ---
+        st.markdown("""
+            <div style="background: linear-gradient(135deg, #b45309, #d97706); border: 2px solid #f59e0b; border-radius: 12px; padding: 12px 18px; color: #fffbeb; font-weight: 700; font-size: 0.95em; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                🏆 <b>IMPORTANTE:</b> Chi ha vinto? Uno dei due giocatori deve assegnarsi la vittoria!
+            </div>
+        """, unsafe_allow_html=True)
+
         st.markdown(f"""
             <div class="turn-banner">
                 ⚔️ Turno N° {st.session_state.round_number}
@@ -675,7 +682,6 @@ if st.session_state.tournament_started:
                 tA_att, tA_port = match["teamA"]
                 tB_att, tB_port = match["teamB"]
                 
-                # Verifichiamo se il giocatore selezionato appartiene alla Squadra A o alla Squadra B di questa partita
                 giocatore_nella_squadra_a = (giocatore_selezionato != "-- Mostra Tutto --" and any(n.lower() == giocatore_selezionato.lower() for n in [tA_att['name'], tA_port['name']]))
                 giocatore_nella_squadra_b = (giocatore_selezionato != "-- Mostra Tutto --" and any(n.lower() == giocatore_selezionato.lower() for n in [tB_att['name'], tB_port['name']]))
 
@@ -690,7 +696,6 @@ if st.session_state.tournament_started:
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    # Il tasto compare per la Squadra A se: sei Admin, oppure sei in vista personale, oppure hai cercato/selezionato il tuo nome editi proprio in questa squadra A
                     mostra_tasto_A = is_admin or is_vista_personale or giocatore_nella_squadra_a
                     
                     if mostra_tasto_A:
@@ -734,7 +739,6 @@ if st.session_state.tournament_started:
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    # Il tasto compare per la Squadra B se: sei Admin, oppure sei in vista personale, oppure hai cercato/selezionato il tuo nome editi proprio in questa squadra B
                     mostra_tasto_B = is_admin or is_vista_personale or giocatore_nella_squadra_b
 
                     if mostra_tasto_B:
