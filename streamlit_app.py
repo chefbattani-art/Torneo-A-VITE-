@@ -6,36 +6,40 @@ import os
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO CSS ULTRASCOMPATTO & CENTRATO ---
+# --- STILE GRAFICO CSS COMPATTO E ORDINATO ---
 st.markdown("""
     <style>
     .main { background-color: #0b0f19; }
     
+    /* Contenitore match chiuso in un unico quadrante */
     .match-card { 
         background: linear-gradient(145deg, #131b2e, #0d1322); 
-        padding: 10px; 
-        border-radius: 10px; 
-        margin-bottom: 10px; 
+        padding: 12px; 
+        border-radius: 12px; 
+        margin-bottom: 12px; 
         border: 1px solid #1e293b;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
     
+    /* Header Biliardino */
     .biliardino-box { 
         background: linear-gradient(90deg, #f59e0b, #d97706); 
         color: #0f172a; 
         text-align: center; 
-        font-size: 0.8em; 
+        font-size: 0.82em; 
         font-weight: 800; 
-        padding: 3px; 
-        border-radius: 4px; 
-        margin-bottom: 8px; 
+        padding: 4px; 
+        border-radius: 6px; 
+        margin-bottom: 10px; 
         text-transform: uppercase; 
         letter-spacing: 1px; 
     }
 
+    /* Box Squadra */
     .team-box { 
         background-color: #064e3b; 
-        padding: 8px; 
-        border-radius: 6px; 
+        padding: 8px 6px; 
+        border-radius: 8px; 
         border: 1px solid #059669; 
         color: #ecfdf5; 
         font-size: 0.82em; 
@@ -48,19 +52,14 @@ st.markdown("""
         line-height: 1.3;
     }
 
-    /* Riduciamo i margini vuoti sopra/sotto i bottoni di Streamlit */
-    .stButton {
-        margin-top: -4px !important;
-        margin-bottom: 0px !important;
-    }
-
+    /* Pulsante Vittoria Centrato */
     .stButton > button {
         width: 100% !important;
         background: linear-gradient(135deg, #0284c7, #0369a1) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         border: 1px solid #38bdf8 !important;
-        border-radius: 5px !important;
+        border-radius: 6px !important;
         padding: 4px 0px !important;
         font-size: 0.75em !important;
     }
@@ -281,11 +280,13 @@ if st.session_state.tournament_started:
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             
+            # Apertura del quadrante unificato per la partita
             st.markdown(f"""
                 <div class="match-card">
                     <div class="biliardino-box">BILIARDINO {biliardino_num}</div>
             """, unsafe_allow_html=True)
             
+            # Layout interno al quadrante: Squadra A (sx), VS (centro), Squadra B (dx)
             col_teamA, col_vs, col_teamB = st.columns([5, 1, 5])
             
             with col_teamA:
@@ -296,8 +297,9 @@ if st.session_state.tournament_started:
                     </div>
                 """, unsafe_allow_html=True)
                 
+                # Pulsante di vittoria centrato sotto la Squadra A
                 if is_admin:
-                    if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta A", key=f"win_A_{st.session_state.round_number}_{idx}"):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
                         for per in [tB_att, tB_port]:
                             per["last_result"] = 'L'
@@ -318,8 +320,9 @@ if st.session_state.tournament_started:
                     </div>
                 """, unsafe_allow_html=True)
                 
+                # Pulsante di vittoria centrato sotto la Squadra B
                 if is_admin:
-                    if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vinta B", key=f"win_B_{st.session_state.round_number}_{idx}"):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
                         for per in [tA_att, tA_port]:
                             per["last_result"] = 'L'
@@ -329,6 +332,7 @@ if st.session_state.tournament_started:
                         salva_stato()
                         st.rerun()
                         
+            # Chiusura del quadrante unificato
             st.markdown("</div>", unsafe_allow_html=True)
             
         if partite_in_coda:
