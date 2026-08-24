@@ -6,11 +6,27 @@ import os
 
 st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
 
-# --- STILE GRAFICO PULITO E DEFINITO ---
+# --- STILE GRAFICO PROFESSIONALE (DASHBOARD SPORTIVA) ---
 st.markdown("""
     <style>
     .main { background-color: #0b0f19; }
     
+    /* Banner Turno In Evidenza */
+    .turn-banner {
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        border: 1px solid #60a5fa;
+        border-radius: 12px;
+        padding: 12px 20px;
+        text-align: center;
+        color: #ffffff;
+        font-size: 1.2em;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
     /* Stile per l'intestazione del biliardino dentro il box */
     .biliardino-header {
         background: linear-gradient(90deg, #f59e0b, #d97706);
@@ -76,6 +92,45 @@ st.markdown("""
     .stButton > button:hover {
         background: linear-gradient(135deg, #0369a1, #075985) !important;
         border-color: #7dd3fc !important;
+    }
+
+    /* Box Classifiche */
+    .rank-container {
+        background: linear-gradient(145deg, #131b2e, #0d1322);
+        border: 1px solid #1e293b;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    .rank-header {
+        font-size: 1em;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid #334155;
+        color: #f8fafc;
+    }
+
+    .player-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #1e293b;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+        border: 1px solid #334155;
+    }
+    
+    .player-row-eliminated {
+        background: #111827;
+        opacity: 0.6;
+        border: 1px solid #1f2937;
     }
     
     div.block-container {
@@ -263,7 +318,12 @@ if is_admin:
 st.markdown("---")
 
 if st.session_state.tournament_started:
-    st.markdown(f"### ⚔️ Turno N° {st.session_state.round_number}")
+    # --- TURNO IN EVIDENZA ---
+    st.markdown(f"""
+        <div class="turn-banner">
+            ⚔️ Turno N° {st.session_state.round_number}
+        </div>
+    """, unsafe_allow_html=True)
     
     data_turno = st.session_state.current_round_matches
     if data_turno and data_turno.get("pass"):
@@ -300,13 +360,12 @@ if st.session_state.tournament_started:
                 # COPPIA A
                 st.markdown(f"""
                     <div class="team-box">
-                        <div class="team-title">Coppia A</div>
                         <div class="player-names">⚽️ {tA_att['name']} &nbsp;|&nbsp; 🥅 {tA_port['name']}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
                 if is_admin:
-                    if st.button("🏆 Assegna Vittoria a Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
+                    if st.button("🏆 Assegna Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
                         for per in [tB_att, tB_port]:
                             per["last_result"] = 'L'
@@ -322,13 +381,12 @@ if st.session_state.tournament_started:
                 # COPPIA B
                 st.markdown(f"""
                     <div class="team-box">
-                        <div class="team-title">Coppia B</div>
                         <div class="player-names">⚽️ {tB_att['name']} &nbsp;|&nbsp; 🥅 {tB_port['name']}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
                 if is_admin:
-                    if st.button("🏆 Assegna Vittoria a Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
+                    if st.button("🏆 Assegna Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
                         for per in [tA_att, tA_port]:
                             per["last_result"] = 'L'
@@ -347,21 +405,43 @@ if st.session_state.tournament_started:
 
 st.markdown("---")
 
-st.markdown("### 📋 Classifica & Vite")
+# --- CLASSIFICA & VITE RIDISEGNATA ---
 if st.session_state.players:
     col_c1, col_c2 = st.columns(2)
+    
     with col_c1:
-        st.markdown("#### ⚽️ Attaccanti")
+        st.markdown("""
+            <div class="rank-container">
+                <div class="rank-header">⚽️ Attaccanti</div>
+        """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
-            stato = "💀 ELIMINATO" if p["eliminated"] else cuori
-            st.markdown(f"**{p['name']}** — {stato}")
+            css_class = "player-row player-row-eliminated" if p["eliminated"] else "player-row"
+            stato_txt = "💀 ELIMINATO" if p["eliminated"] else cuori
+            st.markdown(f"""
+                <div class="{css_class}">
+                    <span><b>{p['name']}</b></span>
+                    <span>{stato_txt}</span>
+                </div>
+            """, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
     with col_c2:
-        st.markdown("#### 🥅 Portieri")
+        st.markdown("""
+            <div class="rank-container">
+                <div class="rank-header">🥅 Portieri</div>
+        """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             cuori = "❤️ " * p["lives"] + "🖤 " * (p["max_lives"] - p["lives"])
-            stato = "💀 ELIMINATO" if p["eliminated"] else cuori
-            st.markdown(f"**{p['name']}** — {stato}")
+            css_class = "player-row player-row-eliminated" if p["eliminated"] else "player-row"
+            stato_txt = "💀 ELIMINATO" if p["eliminated"] else cuori
+            st.markdown(f"""
+                <div class="{css_class}">
+                    <span><b>{p['name']}</b></span>
+                    <span>{stato_txt}</span>
+                </div>
+            """, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 if st.session_state.show_podium:
     st.markdown("---")
