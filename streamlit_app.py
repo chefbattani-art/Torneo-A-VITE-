@@ -380,16 +380,25 @@ def genera_pdf_report():
     buffer.seek(0)
     return buffer.getvalue()
 
-st.sidebar.title("🔐 Accesso Admin")
+st.sidebar.title("🔐 Accesso & Gestione")
 admin_code = st.sidebar.text_input("Codice Amministratore", type="password", placeholder="Inserisci 0000")
 is_admin = (admin_code == "0000")
 
 if is_admin:
     st.sidebar.success("Modo Amministratore Attivo 🔓")
 else:
-    st.sidebar.info("Modalità Spettatore")
+    st.sidebar.info("Modalità Spettatore / Giocatore")
 
 st.title("⚽️ Torneo a Vite")
+
+# Seleziona Giocatore per vista dedicata
+if st.session_state.players and not is_admin:
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 👤 Cerca la tua Partita")
+    nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players])))
+    giocatore_selezionato = st.sidebar.selectbox("Seleziona il tuo nome:", ["-- Mostra Tutto --"] + nomi_giocatori)
+else:
+    giocatore_selezionato = "-- Mostra Tutto --"
 
 if is_admin:
     with st.expander("⚙️ Pannello Configurazione & Gestione", expanded=not st.session_state.tournament_started):
@@ -538,7 +547,7 @@ if st.session_state.tournament_started:
             salva_stato()
             st.rerun()
 
-        # Tasto rapido protetto con .get() per evitare qualsiasi KeyError
+        # Tasto rapido protetto con .get() per tornare indietro se admin
         if is_admin and len(st.session_state.history) > 0:
             if st.button("↩️ Torna al Turno Precedente (Annulla Ultima Modifica)", type="secondary", use_container_width=True):
                 last_state = st.session_state.history.pop()
@@ -566,17 +575,35 @@ if st.session_state.tournament_started:
             partite_in_corso = partite[:num_biliardini]
             partite_in_coda = partite[num_biliardini:]
             
-            is_last_match_of_round = (len(partite_in_corso) == 1 and len(partite_in_coda) == 0)
-            
-            if is_last_match_of_round:
-                st.markdown("""
-                    <div class="last-match-warning">
-                        ⚠️ ULTIMA PARTITA DI QUESTO TURNO! Assegnando la vittoria, il torneo passerà subito al turno successivo.
-                    </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("#### 🏟️ Partite in Corso")
-            for idx, match in enumerate(partite_in_corso):
+            # Filtro se il giocatore ha selezionato il proprio nome dalla barra laterale
+            if giocatore_selezionato != "-- Mostra Tutto --":
+                # Filtra le partite in corso che includono il giocatore
+                partite_filtrate = []
+                for idx, match in enumerate(partite_in_corso):
+                    tA_att, tA_port = match["teamA"]
+                    tB_att, tB_port = match["teamB"]
+                    nomi_partita = [tA_att['name'], tA_port['name'], tB_att['name'], tB_port['name']]
+                    if any(n.lower() == giocatore_selezionato.lower() for n in nomi_partita):
+                        partite_filtrate.append((idx, match))
+                
+                if not partite_filtrate:
+                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non ha una partita attiva in questo turno (o è in pausa/riposo).")
+                else:
+                    st.markdown(f"#### 🎯 Partita di: {giocatore_selezionato.upper()}")
+                
+                iter_partite = partite_filtrate
+            else:
+                is_last_match_of_round = (len(partite_in_corso) == 1 and len(partite_in_coda) == 0)
+                if is_last_match_of_round:
+                    st.markdown("""
+                        <div class="last-match-warning">
+                            ⚠️ ULTIMA PARTITA DI QUESTO TURNO! Assegnando la vittoria, il torneo passerà subito al turno successivo.
+                        </div>
+                    """, unsafe_allow_html=True)
+                st.markdown("#### 🏟️ Partite in Corso")
+                iter_partite = [(idx, match) for idx, match in enumerate(partite_in_corso)]
+
+            for idx, match in iter_partite:
                 biliardino_num = idx + 1
                 tA_att, tA_port = match["teamA"]
                 tB_att, tB_port = match["teamB"]
@@ -592,7 +619,8 @@ if st.session_state.tournament_started:
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if is_admin:
+                    # Chiunque può inserire il risultato se sta giocando o se è admin
+                    if is_admin or giocatore_selezionato != "-- Mostra Tutto --":
                         if st.button("🏆 Assegna Vittoria", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
                             salva_snapshot()
                             
@@ -633,7 +661,7 @@ if st.session_state.tournament_started:
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if is_admin:
+                    if is_admin or giocatore_selezionato != "-- Mostra Tutto --":
                         if st.button("🏆 Assegna Vittoria", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
                             salva_snapshot()
                             
@@ -666,7 +694,7 @@ if st.session_state.tournament_started:
                             salva_stato()
                             st.rerun()
                 
-            if partite_in_coda:
+            if partite_in_coda and giocatore_selezionato == "-- Mostra Tutto --":
                 st.markdown("#### ⏳ In Coda")
                 for q_idx, q_match in enumerate(partite_in_coda):
                     qa, qp = q_match["teamA"]
