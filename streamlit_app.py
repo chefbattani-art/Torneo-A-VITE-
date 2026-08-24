@@ -422,7 +422,7 @@ if "vista_personale_attiva" not in st.session_state:
 # --- TENDINA INFORMATIVA ROSSA E SELEZIONE SOTTO AL TITOLO ---
 st.markdown("""
     <div class="info-red-box">
-        ⚠️ <b>AREA GIOCATORI:</b> Seleziona il tuo nome qui sotto. Puoi usare l'icona dell'occhio <b>👁️</b> per passare istantaneamente dalla visuale dell'intero torneo alla tua partita personale per registrare la vittoria! La tua preferenza rimarrà memorizzata.
+        ⚠️ <b>AREA GIOCATORI:</b> Seleziona il tuo nome qui sotto. Puoi usare l'icona dell'occhio <b>👁️</b> per passare istantaneamente dalla visuale dell'intero torneo alla tua partita personale! La tua preferenza rimarrà memorizzata.
     </div>
 """, unsafe_allow_html=True)
 
@@ -642,7 +642,9 @@ if st.session_state.tournament_started:
             partite_in_corso = partite[:num_biliardini]
             partite_in_coda = partite[num_biliardini:]
             
-            if giocatore_selezionato != "-- Mostra Tutto --" and st.session_state.vista_personale_attiva:
+            is_vista_personale = (giocatore_selezionato != "-- Mostra Tutto --" and st.session_state.vista_personale_attiva)
+
+            if is_vista_personale:
                 partite_filtrate = []
                 for idx, match in enumerate(partite_in_corso):
                     tA_att, tA_port = match["teamA"]
@@ -673,6 +675,10 @@ if st.session_state.tournament_started:
                 tA_att, tA_port = match["teamA"]
                 tB_att, tB_port = match["teamB"]
                 
+                # Verifichiamo se il giocatore selezionato appartiene alla Squadra A o alla Squadra B di questa partita
+                giocatore_nella_squadra_a = (giocatore_selezionato != "-- Mostra Tutto --" and any(n.lower() == giocatore_selezionato.lower() for n in [tA_att['name'], tA_port['name']]))
+                giocatore_nella_squadra_b = (giocatore_selezionato != "-- Mostra Tutto --" and any(n.lower() == giocatore_selezionato.lower() for n in [tB_att['name'], tB_port['name']]))
+
                 with st.container(border=True):
                     st.markdown(f"""
                         <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
@@ -684,37 +690,41 @@ if st.session_state.tournament_started:
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
-                        salva_snapshot()
-                        
-                        match_record = {
-                            "turno": st.session_state.round_number,
-                            "partite": [{
-                                "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
-                                "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
-                                "vincitore": f"Vittoria Squadra A (⚽️ {tA_att['name'].upper()} & 🥅 {tA_port['name'].upper()})"
-                            }]
-                        }
-                        found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
-                        if found_h:
-                            found_h["partite"].append(match_record["partite"][0])
-                        else:
-                            st.session_state.match_history.append(match_record)
-
-                        for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                        for per in [tB_att, tB_port]:
-                            per["last_result"] = 'L'
-                            per["lives"] = max(0, per["lives"] - 1)
-                            if per["lives"] == 0: per["eliminated"] = True
-                        
-                        st.session_state.current_round_matches["partite"].pop(idx)
-                        
-                        if not st.session_state.current_round_matches["partite"]:
-                            st.session_state.round_number += 1
-                            st.session_state.current_round_matches = genera_abbinamenti()
+                    # Il tasto compare per la Squadra A se: sei Admin, oppure sei in vista personale, oppure hai cercato/selezionato il tuo nome editi proprio in questa squadra A
+                    mostra_tasto_A = is_admin or is_vista_personale or giocatore_nella_squadra_a
+                    
+                    if mostra_tasto_A:
+                        if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
+                            salva_snapshot()
                             
-                        salva_stato()
-                        st.rerun()
+                            match_record = {
+                                "turno": st.session_state.round_number,
+                                "partite": [{
+                                    "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
+                                    "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
+                                    "vincitore": f"Vittoria Squadra A (⚽️ {tA_att['name'].upper()} & 🥅 {tA_port['name'].upper()})"
+                                }]
+                            }
+                            found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
+                            if found_h:
+                                found_h["partite"].append(match_record["partite"][0])
+                            else:
+                                st.session_state.match_history.append(match_record)
+
+                            for v in [tA_att, tA_port]: v["last_result"] = 'W'
+                            for per in [tB_att, tB_port]:
+                                per["last_result"] = 'L'
+                                per["lives"] = max(0, per["lives"] - 1)
+                                if per["lives"] == 0: per["eliminated"] = True
+                            
+                            st.session_state.current_round_matches["partite"].pop(idx)
+                            
+                            if not st.session_state.current_round_matches["partite"]:
+                                st.session_state.round_number += 1
+                                st.session_state.current_round_matches = genera_abbinamenti()
+                                
+                            salva_stato()
+                            st.rerun()
                     
                     st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
                     
@@ -724,39 +734,43 @@ if st.session_state.tournament_started:
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
-                        salva_snapshot()
-                        
-                        match_record = {
-                            "turno": st.session_state.round_number,
-                            "partite": [{
-                                "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
-                                "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
-                                "vincitore": f"Vittoria Squadra B (⚽️ {tB_att['name'].upper()} & 🥅 {tB_port['name'].upper()})"
-                            }]
-                        }
-                        found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
-                        if found_h:
-                            found_h["partite"].append(match_record["partite"][0])
-                        else:
-                            st.session_state.match_history.append(match_record)
+                    # Il tasto compare per la Squadra B se: sei Admin, oppure sei in vista personale, oppure hai cercato/selezionato il tuo nome editi proprio in questa squadra B
+                    mostra_tasto_B = is_admin or is_vista_personale or giocatore_nella_squadra_b
 
-                        for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                        for per in [tA_att, tA_port]:
-                            per["last_result"] = 'L'
-                            per["lives"] = max(0, per["lives"] - 1)
-                            if per["lives"] == 0: per["eliminated"] = True
-                        
-                        st.session_state.current_round_matches["partite"].pop(idx)
-                        
-                        if not st.session_state.current_round_matches["partite"]:
-                            st.session_state.round_number += 1
-                            st.session_state.current_round_matches = genera_abbinamenti()
+                    if mostra_tasto_B:
+                        if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
+                            salva_snapshot()
                             
-                        salva_stato()
-                        st.rerun()
+                            match_record = {
+                                "turno": st.session_state.round_number,
+                                "partite": [{
+                                    "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
+                                    "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
+                                    "vincitore": f"Vittoria Squadra B (⚽️ {tB_att['name'].upper()} & 🥅 {tB_port['name'].upper()})"
+                                }]
+                            }
+                            found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
+                            if found_h:
+                                found_h["partite"].append(match_record["partite"][0])
+                            else:
+                                st.session_state.match_history.append(match_record)
+
+                            for v in [tB_att, tB_port]: v["last_result"] = 'W'
+                            for per in [tA_att, tA_port]:
+                                per["last_result"] = 'L'
+                                per["lives"] = max(0, per["lives"] - 1)
+                                if per["lives"] == 0: per["eliminated"] = True
+                            
+                            st.session_state.current_round_matches["partite"].pop(idx)
+                            
+                            if not st.session_state.current_round_matches["partite"]:
+                                st.session_state.round_number += 1
+                                st.session_state.current_round_matches = genera_abbinamenti()
+                                
+                            salva_stato()
+                            st.rerun()
                 
-            if partite_in_coda and not st.session_state.vista_personale_attiva:
+            if partite_in_coda and not is_vista_personale:
                 st.markdown("#### ⏳ In Coda")
                 for q_idx, q_match in enumerate(partite_in_coda):
                     qa, qp = q_match["teamA"]
