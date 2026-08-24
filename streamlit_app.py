@@ -34,7 +34,8 @@ st.markdown("""
         font-weight: 700 !important;
         border: 1px solid #38bdf8 !important;
         border-radius: 6px !important;
-        padding: 6px 10px !important;
+        padding: 6px 4px !important;
+        font-size: 0.85em !important;
     }
     .stButton > button:hover {
         background-color: #0369a1 !important;
@@ -277,11 +278,11 @@ if st.session_state.tournament_started:
                     </div>
             """, unsafe_allow_html=True)
             
-            # Pulsanti di vittoria posizionati esattamente sotto ciascuna coppia
+            # Pulsanti di vittoria posizionati affiancati, ciascuno esattamente sotto la propria squadra
             if is_admin:
                 col_btn_a, col_space, col_btn_b = st.columns([1, 0.2, 1])
                 with col_btn_a:
-                    if st.button("🏆 Vinta Coppia A", key=f"win_A_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vince Sinistra", key=f"win_A_{st.session_state.round_number}_{idx}"):
                         for v in [tA_att, tA_port]: v["last_result"] = 'W'
                         for per in [tB_att, tB_port]:
                             per["last_result"] = 'L'
@@ -291,7 +292,7 @@ if st.session_state.tournament_started:
                         salva_stato()
                         st.rerun()
                 with col_btn_b:
-                    if st.button("🏆 Vinta Coppia B", key=f"win_B_{st.session_state.round_number}_{idx}"):
+                    if st.button("🏆 Vince Destra", key=f"win_B_{st.session_state.round_number}_{idx}"):
                         for v in [tB_att, tB_port]: v["last_result"] = 'W'
                         for per in [tA_att, tA_port]:
                             per["last_result"] = 'L'
