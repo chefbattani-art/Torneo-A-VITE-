@@ -8,11 +8,11 @@ st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽�
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; background-color: #10b981; color: white; border: none; padding: 10px; }
+    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; background-color: #10b981; color: white; border: none; padding: 10px; font-size: 0.95em; }
     .stButton>button:hover { background-color: #059669; color: white; }
-    .match-container { background-color: #161b22; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #30363d; }
-    .team-box { background-color: #21262d; padding: 15px; border-radius: 12px; border: 1px solid #363d44; text-align: center; height: 100%; }
-    .biliardino-title { text-align: center; font-size: 1.4em; font-weight: bold; color: #f87171; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    .match-container { background-color: #16202b; padding: 18px; border-radius: 14px; margin-bottom: 25px; border: 1px solid #2b3a4a; }
+    .team-box { background-color: #213142; padding: 14px; border-radius: 10px; border: 1px solid #32465c; text-align: center; height: 100%; }
+    .biliardino-title { text-align: center; font-size: 1.3em; font-weight: bold; color: #38bdf8; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -224,8 +224,8 @@ if st.session_state.tournament_started:
             with col_m1:
                 st.markdown(f"""
                     <div class="team-box">
-                        <div style="font-size: 1.05em; margin-bottom: 8px;">⚽️ <b>{tA_att['name']}</b></div>
-                        <div style="font-size: 1.05em; margin-bottom: 12px;">🥅 <b>{tA_port['name']}</b></div>
+                        <div style="font-size: 1.05em; color: #f3f4f6; margin-bottom: 6px;">⚽️ <b>{tA_att['name']}</b></div>
+                        <div style="font-size: 1.05em; color: #f3f4f6; margin-bottom: 10px;">🥅 <b>{tA_port['name']}</b></div>
                     </div>
                 """, unsafe_allow_html=True)
                 if is_admin:
@@ -243,13 +243,13 @@ if st.session_state.tournament_started:
                         st.rerun()
 
             with col_mvs:
-                st.markdown("<h3 style='text-align: center; color: #f59e0b; margin-top: 30px;'>VS</h3>", unsafe_allow_html=True)
+                st.markdown("<h3 style='text-align: center; color: #f59e0b; margin-top: 25px;'>VS</h3>", unsafe_allow_html=True)
                 
             with col_m2:
                 st.markdown(f"""
                     <div class="team-box">
-                        <div style="font-size: 1.05em; margin-bottom: 8px;">⚽️ <b>{tB_att['name']}</b></div>
-                        <div style="font-size: 1.05em; margin-bottom: 12px;">🥅 <b>{tB_port['name']}</b></div>
+                        <div style="font-size: 1.05em; color: #f3f4f6; margin-bottom: 6px;">⚽️ <b>{tB_att['name']}</b></div>
+                        <div style="font-size: 1.05em; color: #f3f4f6; margin-bottom: 10px;">🥅 <b>{tB_port['name']}</b></div>
                     </div>
                 """, unsafe_allow_html=True)
                 if is_admin:
