@@ -320,8 +320,11 @@ if "initialized" not in st.session_state:
         st.session_state.current_round_matches = []
         st.session_state.round_number = 0
 
+# Recupera lo stato di login dai query parameters dell'URL (se presenti al refresh)
+query_params = st.query_params
 if "giocatore_selezionato" not in st.session_state:
-    st.session_state.giocatore_selezionato = None
+    url_user = query_params.get("user", None)
+    st.session_state.giocatore_selezionato = url_user if url_user else None
 
 if "vista_personale_attiva" not in st.session_state:
     st.session_state.vista_personale_attiva = False
@@ -427,6 +430,7 @@ if is_admin:
     st.sidebar.markdown("---")
     if st.sidebar.button("🚀 ACCEDI COME ADMIN", type="primary", use_container_width=True):
         st.session_state.giocatore_selezionato = "ADMIN"
+        st.query_params["user"] = "ADMIN"
         st.rerun()
 
 nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
@@ -439,6 +443,7 @@ if st.session_state.giocatore_selezionato is None:
             nome_scelto_temp = st.selectbox("Iscritti:", nomi_giocatori, label_visibility="collapsed")
             if st.button("ACCEDI ALLA COMPETIZIONE", type="primary", use_container_width=True):
                 st.session_state.giocatore_selezionato = nome_scelto_temp
+                st.query_params["user"] = nome_scelto_temp
                 st.rerun()
     else:
         st.warning("⚠️ Nessun partecipante caricato. Inserisci i dati dal pannello Admin nella barra laterale.")
@@ -476,6 +481,8 @@ if st.session_state.giocatore_selezionato is None:
                 st.session_state.history = []
                 st.session_state.match_history = []
                 st.session_state.giocatore_selezionato = None
+                if "user" in st.query_params:
+                    del st.query_params["user"]
                 if os.path.exists(STATE_FILE): 
                     os.remove(STATE_FILE)
                 st.rerun()
@@ -489,6 +496,8 @@ with col_u2:
     if st.button("🔄 Logout", use_container_width=True):
         st.session_state.giocatore_selezionato = None
         st.session_state.vista_personale_attiva = False
+        if "user" in st.query_params:
+            del st.query_params["user"]
         st.rerun()
 
 etichetta_occhio = "👁️ Mostra Tutti i Match" if st.session_state.vista_personale_attiva else f"🔥 Le Partite di {st.session_state.giocatore_selezionato}"
@@ -506,6 +515,8 @@ if is_admin:
             st.session_state.history = []
             st.session_state.match_history = []
             st.session_state.giocatore_selezionato = None
+            if "user" in st.query_params:
+                del st.query_params["user"]
             if os.path.exists(STATE_FILE): 
                 os.remove(STATE_FILE)
             st.rerun()
@@ -582,7 +593,6 @@ if st.session_state.tournament_started:
             tB_att, tB_port = match["teamB"]
             nomi_match = [tA_att['name'].lower(), tA_port['name'].lower(), tB_att['name'].lower(), tB_port['name'].lower()]
             
-            # Se siamo in vista personale e non siamo admin, filtriamo. L'admin vede tutto.
             if is_personale and target_user != "admin" and target_user not in nomi_match:
                 continue
 
