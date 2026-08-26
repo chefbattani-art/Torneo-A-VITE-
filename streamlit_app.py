@@ -95,20 +95,17 @@ st.markdown("""
         font-size: 1.1em;
         font-weight: 700;
         margin-top: 15px;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
     }
-    .neon-names-lives {
-        color: #38bdf8;
-        font-size: 1.2em;
-        font-weight: 700;
-        letter-spacing: 1px;
-    }
-    .neon-names-eliminated {
+    .neon-name-item {
         color: #ef4444;
-        font-size: 1.3em;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.25em;
         font-weight: 900;
-        letter-spacing: 1px;
-        text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 4px 0;
+        text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
     }
 
     /* Card Tavolo Attivo */
@@ -516,27 +513,41 @@ st.markdown("---")
 if st.session_state.tournament_started:
     data_turno = st.session_state.current_round_matches
     
-    # CONTROLLO FINE TURNO COMPLETO: Se la lista delle partite è vuota, significa che il turno è finito del tutto!
     if data_turno and not data_turno.get("partite"):
         if "turno_report_log" in st.session_state and st.session_state.turno_report_log.get("vite_perse"):
             log_data = st.session_state.turno_report_log
-            nomi_vite = ", ".join(set(log_data["vite_perse"])) if log_data["vite_perse"] else "Nessuno"
-            nomi_elim = ", ".join(set(log_data["eliminati"])) if log_data["eliminati"] else "Nessun eliminato"
             
-            # Mostra la finestra neon gigante e blocca l'esecuzione per 5 secondi
+            # Genera le righe separate in stampatello maiuscolo per le vite perse
+            vite_list_html = ""
+            if log_data["vite_perse"]:
+                unici_vite = sorted(list(set(log_data["vite_perse"])))
+                for nome in unici_vite:
+                    vite_list_html += f'<div class="neon-name-item">{nome.upper()}</div>'
+            else:
+                vite_list_html = '<div class="neon-name-item" style="color: #38bdf8;">NESSUNO</div>'
+
+            # Genera le righe separate in stampatello maiuscolo per gli eliminati
+            elim_list_html = ""
+            if log_data["eliminati"]:
+                unici_elim = sorted(list(set(log_data["eliminati"])))
+                for nome in unici_elim:
+                    elim_list_html += f'<div class="neon-name-item">{nome.upper()}</div>'
+            else:
+                elim_list_html = '<div class="neon-name-item" style="color: #38bdf8;">NESSUN ELIMINATO</div>'
+
+            # Mostra la finestra neon gigante con i nomi in colonna e blocca l'esecuzione per 5 secondi
             st.markdown(f"""
                 <div class="neon-summary-box">
                     <div class="neon-summary-title">⚡ REPORT FINALE TURNO N° {st.session_state.round_number} ⚡</div>
                     <div class="neon-section-label">📉 GIOCATORI CHE HANNO PERSO UNA VITA:</div>
-                    <div class="neon-names-lives">{nomi_vite}</div>
+                    {vite_list_html}
                     <br>
                     <div class="neon-section-label">💀 GIOCATORI ELIMINATI DAL TORNEO:</div>
-                    <div class="neon-names-eliminated">{nomi_elim}</div>
+                    {elim_list_html}
                 </div>
             """, unsafe_allow_html=True)
             
             time.sleep(5)
-            # Pulisci il log del turno appena concluso
             st.session_state.turno_report_log = {"turno": -1, "vite_perse": [], "eliminati": []}
 
         st.session_state.round_number += 1
