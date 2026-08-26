@@ -52,14 +52,60 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);
     }
 
+    /* Banner Ultima Partita */
+    .pro-last-match-banner {
+        background: linear-gradient(135deg, #2c0b0b, #450a0a);
+        border: 2px solid #ef4444;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        color: #f87171;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.1em;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Box Report Perdita Vite ed Eliminazioni */
+    .pro-report-box {
+        background: #0d111a;
+        border: 1px dashed #38bdf8;
+        border-radius: 6px;
+        padding: 10px 15px;
+        margin-bottom: 20px;
+        font-size: 0.95em;
+    }
+    .pro-eliminated-box {
+        background: #1a0505;
+        border: 1px solid #ef4444;
+        border-radius: 6px;
+        padding: 10px 15px;
+        margin-bottom: 20px;
+        color: #fca5a5;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.95em;
+    }
+
     /* Card Tavolo Attivo */
     .pro-match-card {
         background: linear-gradient(160deg, #070d1d, #03070f);
         border: 2px solid rgba(0, 243, 255, 0.4);
         border-radius: 12px;
         padding: 18px;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 243, 255, 0.1);
+    }
+
+    .pro-match-card-last {
+        background: linear-gradient(160deg, #180808, #070303);
+        border: 2px solid rgba(239, 68, 68, 0.7);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(239, 68, 68, 0.2);
     }
 
     /* Card Coda */
@@ -139,9 +185,9 @@ st.markdown("""
         font-weight: 700 !important;
         border: 1px solid #00f3ff !important;
         border-radius: 6px !important;
-        padding: 8px 0px !important;
-        font-size: 0.8em !important;
-        letter-spacing: 1.5px !important;
+        padding: 10px 0px !important;
+        font-size: 0.85em !important;
+        letter-spacing: 1px !important;
         box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
         margin-top: 10px;
     }
@@ -469,6 +515,8 @@ if st.session_state.tournament_started:
         else:
             st.markdown("### 🔥 PARTITE IN CORSO (Sui biliardini):")
 
+        total_partite_corso = len(partite_in_corso)
+
         for idx, match in enumerate(partite_in_corso):
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
@@ -478,50 +526,120 @@ if st.session_state.tournament_started:
                 continue
 
             biliardino_num = idx + 1
-            
-            st.markdown(f"""
-                <div class="pro-match-card">
-                    <div class="match-header-row">
-                        <span class="biliardino-title">🏟️ BILIARDINO {biliardino_num}</span>
-                        <span class="turno-badge">TURNO {st.session_state.round_number}</span>
+            is_ultima = (idx == total_partite_corso - 1)
+
+            if is_ultima and not is_personale:
+                st.markdown(f"""<div class="pro-last-match-banner">⚠️ ULTIMA PARTITA TURNO N° {st.session_state.round_number}</div>""", unsafe_allow_html=True)
+                st.markdown(f"""
+                    <div class="pro-match-card-last">
+                        <div class="match-header-row">
+                            <span class="biliardino-title" style="color: #ef4444;">🏟️ BILIARDINO {biliardino_num} (ULTIMO MATCH)</span>
+                            <span class="turno-badge" style="border-color: #ef4444; color: #ef4444;">TURNO {st.session_state.round_number}</span>
+                        </div>
+                        <div class="match-teams-row" style="background: #180505; border-color: #7f1d1d;">
+                            <div class="team-box">🥅 {tA_port['name'].upper()} / ⚽️ {tA_att['name'].upper()}</div>
+                            <div class="vs-badge" style="color: #ef4444;">VS</div>
+                            <div class="team-box">🥅 {tB_port['name'].upper()} / ⚽️ {tB_att['name'].upper()}</div>
+                        </div>
                     </div>
-                    <div class="match-teams-row">
-                        <div class="team-box">🥅 {tA_port['name'].upper()} / ⚽️ {tA_att['name'].upper()}</div>
-                        <div class="vs-badge">VS</div>
-                        <div class="team-box">🥅 {tB_port['name'].upper()} / ⚽️ {tB_att['name'].upper()}</div>
+                """, unsafe_allow_html=True)
+            else:
+                card_style_class = "pro-match-card-last" if (is_ultima and is_personale) else "pro-match-card"
+                if is_ultima and is_personale:
+                    st.markdown(f"""<div class="pro-last-match-banner">⚠️ ULTIMA PARTITA TURNO N° {st.session_state.round_number}</div>""", unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                    <div class="{card_style_class}">
+                        <div class="match-header-row">
+                            <span class="biliardino-title">🏟️ BILIARDINO {biliardino_num}</span>
+                            <span class="turno-badge">TURNO {st.session_state.round_number}</span>
+                        </div>
+                        <div class="match-teams-row">
+                            <div class="team-box">🥅 {tA_port['name'].upper()} / ⚽️ {tA_att['name'].upper()}</div>
+                            <div class="vs-badge">VS</div>
+                            <div class="team-box">🥅 {tB_port['name'].upper()} / ⚽️ {tB_att['name'].upper()}</div>
+                        </div>
                     </div>
-                </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
             
+            # Stringhe nomi coppie per i bottoni
+            nome_coppia_a = f"{tA_port['name'].upper()} & {tA_att['name'].upper()}"
+            nome_coppia_b = f"{tB_port['name'].upper()} & {tB_att['name'].upper()}"
+
             c1, c2 = st.columns(2)
             with c1:
-                if st.button("⚡ VITTORIA SQUADRA A", key=f"wa_{st.session_state.round_number}_{idx}", use_container_width=True):
+                if st.button(f"⚡ VITTORIA: {nome_coppia_a}", key=f"wa_{st.session_state.round_number}_{idx}", use_container_width=True):
                     salva_snapshot()
+                    
+                    # Tracciamento perdenti per report vite perse / eliminati
+                    perdenti_turno = [tB_att, tB_port]
+                    
                     for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                    for per in [tB_att, tB_port]:
+                    for per in perdenti_turno:
                         per["last_result"] = 'L'
                         per["lives"] = max(0, per["lives"] - 1)
                         if per["lives"] == 0: per["eliminated"] = True
+                    
+                    # Salvataggio storico match completato nel turno
+                    periti_nomi = [p['name'] for p in perdenti_turno if p['lives'] == 0]
+                    perdita_vite_nomi = [p['name'] for p in perdenti_turno]
+                    
+                    if "turno_report_log" not in st.session_state:
+                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
+                    if st.session_state.turno_report_log["turno"] != st.session_state.round_number:
+                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
+                    
+                    st.session_state.turno_report_log["vite_perse"].extend(perdita_vite_nomi)
+                    st.session_state.turno_report_log["eliminati"].extend(periti_nomi)
+
                     st.session_state.current_round_matches["partite"].pop(idx)
                     if not st.session_state.current_round_matches["partite"]:
                         st.session_state.round_number += 1
                         st.session_state.current_round_matches = genera_abbinamenti()
+                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
                     salva_stato()
                     st.rerun()
+
             with c2:
-                if st.button("⚡ VITTORIA SQUADRA B", key=f"wb_{st.session_state.round_number}_{idx}", use_container_width=True):
+                if st.button(f"⚡ VITTORIA: {nome_coppia_b}", key=f"wb_{st.session_state.round_number}_{idx}", use_container_width=True):
                     salva_snapshot()
+                    
+                    perdenti_turno = [tA_att, tA_port]
+                    
                     for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                    for per in [tA_att, tA_port]:
+                    for per in perdenti_turno:
                         per["last_result"] = 'L'
                         per["lives"] = max(0, per["lives"] - 1)
                         if per["lives"] == 0: per["eliminated"] = True
+                    
+                    periti_nomi = [p['name'] for p in perdenti_turno if p['lives'] == 0]
+                    perdita_vite_nomi = [p['name'] for p in perdenti_turno]
+                    
+                    if "turno_report_log" not in st.session_state:
+                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
+                    if st.session_state.turno_report_log["turno"] != st.session_state.round_number:
+                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
+                    
+                    st.session_state.turno_report_log["vite_perse"].extend(perdita_vite_nomi)
+                    st.session_state.turno_report_log["eliminati"].extend(periti_nomi)
+
                     st.session_state.current_round_matches["partite"].pop(idx)
                     if not st.session_state.current_round_matches["partite"]:
                         st.session_state.round_number += 1
                         st.session_state.current_round_matches = genera_abbinamenti()
+                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
                     salva_stato()
                     st.rerun()
+
+        # Mostra riepilogo vite perse / eliminate nel turno corrente finora
+        if "turno_report_log" in st.session_state and st.session_state.turno_report_log["turno"] == st.session_state.round_number:
+            log_data = st.session_state.turno_report_log
+            if log_data["vite_perse"]:
+                nomi_vite = ", ".join(set(log_data["vite_perse"]))
+                st.markdown(f"""<div class="pro-report-box">📉 <b>Persone che hanno perso una vita in questo Turno ({st.session_state.round_number}):</b> {nomi_vite}</div>""", unsafe_allow_html=True)
+            if log_data["eliminati"]:
+                nomi_elim = ", ".join(set(log_data["eliminati"]))
+                st.markdown(f"""<div class="pro-eliminated-box">💀 <b>GIOCATORI ELIMINATI DEFINITIVAMENTE NEL TURNO {st.session_state.round_number}:</b> {nomi_elim}</div>""", unsafe_allow_html=True)
 
         if partite_in_coda and not is_personale:
             st.markdown("### 📢 PROSSIMI IN CODA:")
