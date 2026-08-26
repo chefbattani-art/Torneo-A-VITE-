@@ -11,7 +11,7 @@ from reportlab.lib import colors
 
 st.set_page_config(page_title="PRO TOURNAMENT // ESPORTS ARENA", page_icon="🏆", layout="centered")
 
-# --- STILE GRAFICO PRO ESPORTS (BLU NEON, ORO, VIOLETTO) ---
+# --- STILE GRAFICO PRO ESPORTS (BOX PARTITE SEPARATI E NETTI) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap');
@@ -53,14 +53,14 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(0, 243, 255, 0.15), inset 0 0 15px rgba(0, 243, 255, 0.1);
     }
 
-    /* Box Biliardino - Stile Tavolo da Gara */
+    /* Box Singolo Biliardino - Ora nettamente isolato con bordo Violetto/Azzurro */
     .pro-match-card {
-        background: rgba(10, 15, 30, 0.7);
-        border: 1px solid rgba(0, 243, 255, 0.2);
-        border-radius: 10px;
-        padding: 18px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        background: linear-gradient(160deg, #070d1d, #03070f);
+        border: 2px solid rgba(176, 38, 255, 0.4);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9), 0 0 15px rgba(176, 38, 255, 0.1);
     }
 
     .biliardino-tag {
@@ -69,21 +69,21 @@ st.markdown("""
         text-align: center;
         font-family: 'Orbitron', sans-serif;
         font-weight: 900;
-        font-size: 0.8em;
+        font-size: 0.9em;
         text-transform: uppercase;
         letter-spacing: 2px;
-        padding: 6px;
-        border-radius: 4px;
-        margin-bottom: 14px;
+        padding: 8px;
+        border-radius: 6px;
+        margin-bottom: 16px;
         box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
     }
 
     /* Box Squadre */
     .pro-team-box {
-        background: #060c18;
+        background: #0b1326;
         border: 1px solid #1e293b;
-        border-radius: 6px;
-        padding: 12px;
+        border-radius: 8px;
+        padding: 14px;
         text-align: center;
     }
 
@@ -103,10 +103,10 @@ st.markdown("""
         font-family: 'Orbitron', sans-serif;
         font-weight: 900;
         color: #b026ff;
-        font-size: 1.1em;
-        margin: 10px 0;
+        font-size: 1.2em;
+        margin: 12px 0;
         letter-spacing: 3px;
-        text-shadow: 0 0 10px rgba(176, 38, 255, 0.5);
+        text-shadow: 0 0 10px rgba(176, 38, 255, 0.6);
     }
 
     /* Pulsanti Vittoria - Gradiente Blu/Azzurro Neon */
@@ -123,6 +123,8 @@ st.markdown("""
         letter-spacing: 1.5px !important;
         box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
         transition: all 0.2s ease;
+        margin-top: 8px;
+        margin-bottom: 4px;
     }
     .stButton > button:hover {
         background: linear-gradient(135deg, #007bff, #00bfff) !important;
@@ -706,6 +708,7 @@ if st.session_state.tournament_started:
                 giocatore_nella_squadra_a = any(n.lower() == giocatore_selezionato.lower() for n in [tA_att['name'], tA_port['name']])
                 giocatore_nella_squadra_b = any(n.lower() == giocatore_selezionato.lower() for n in [tB_att['name'], tB_port['name']])
 
+                # --- BLOCCO UNICO DEL BILIARDINO (ISOLATO GRAFICAMENTE) ---
                 st.markdown(f"""
                     <div class="pro-match-card">
                         <div class="biliardino-tag">📍 BILIARDINO N. {biliardino_num}</div>
@@ -795,6 +798,7 @@ if st.session_state.tournament_started:
                         salva_stato()
                         st.rerun()
                 
+                # Chiusura box singolo biliardino
                 st.markdown("</div>", unsafe_allow_html=True)
                 
             if partite_in_coda and not is_vista_personale:
