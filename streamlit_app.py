@@ -535,10 +535,9 @@ if st.session_state.players:
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             css = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
             n_css = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
-            # Pallini verdi per le vite attive, rossi per quelle perse
             vite_attive = "🟢 " * p["lives"]
             vite_perse = "🔴 " * (p["max_lives"] - p["lives"])
-             pallini_str = vite_attive + vite_perse
+            pallini_str = vite_attive + vite_perse
             st.markdown(f"""<div class="{css}"><span class="{n_css}">{p['name']}</span><span>{pallini_str}</span></div>""", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with col_c2:
@@ -546,7 +545,6 @@ if st.session_state.players:
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             css = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
             n_css = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
-            # Pallini verdi per le vite attive, rossi per quelle perse
             vite_attive = "🟢 " * p["lives"]
             vite_perse = "🔴 " * (p["max_lives"] - p["lives"])
             pallini_str = vite_attive + vite_perse
