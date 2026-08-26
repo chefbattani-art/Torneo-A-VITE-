@@ -422,6 +422,13 @@ st.sidebar.title("🔐 SECURITY & ADMIN")
 admin_code = st.sidebar.text_input("Codice Amministratore", type="password", placeholder="Inserisci 0000")
 is_admin = (admin_code == "0000")
 
+# Se l'utente ha inserito il PIN corretto, mostriamo il pulsante per entrare subito come Admin
+if is_admin:
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🚀 ACCEDI COME ADMIN", type="primary", use_container_width=True):
+        st.session_state.giocatore_selezionato = "ADMIN"
+        st.rerun()
+
 nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
 
 if st.session_state.giocatore_selezionato is None:
@@ -434,7 +441,7 @@ if st.session_state.giocatore_selezionato is None:
                 st.session_state.giocatore_selezionato = nome_scelto_temp
                 st.rerun()
     else:
-        st.warning("⚠️ Nessun partecipante caricato. Inserisci i dati dal pannello Admin.")
+        st.warning("⚠️ Nessun partecipante caricato. Inserisci i dati dal pannello Admin nella barra laterale.")
         
     if is_admin:
         with st.expander("⚙️ Pannello Configurazione & Gestione (Admin)", expanded=True):
@@ -517,7 +524,6 @@ if st.session_state.tournament_started:
         if "turno_report_log" in st.session_state and st.session_state.turno_report_log.get("vite_perse"):
             log_data = st.session_state.turno_report_log
             
-            # Genera le righe separate in stampatello maiuscolo per le vite perse
             vite_list_html = ""
             if log_data["vite_perse"]:
                 unici_vite = sorted(list(set(log_data["vite_perse"])))
@@ -526,7 +532,6 @@ if st.session_state.tournament_started:
             else:
                 vite_list_html = '<div class="neon-name-item" style="color: #38bdf8;">NESSUNO</div>'
 
-            # Genera le righe separate in stampatello maiuscolo per gli eliminati
             elim_list_html = ""
             if log_data["eliminati"]:
                 unici_elim = sorted(list(set(log_data["eliminati"])))
@@ -535,7 +540,6 @@ if st.session_state.tournament_started:
             else:
                 elim_list_html = '<div class="neon-name-item" style="color: #38bdf8;">NESSUN ELIMINATO</div>'
 
-            # Mostra la finestra neon gigante con i nomi in colonna e blocca l'esecuzione per 5 secondi
             st.markdown(f"""
                 <div class="neon-summary-box">
                     <div class="neon-summary-title">⚡ REPORT FINALE TURNO N° {st.session_state.round_number} ⚡</div>
@@ -578,7 +582,8 @@ if st.session_state.tournament_started:
             tB_att, tB_port = match["teamB"]
             nomi_match = [tA_att['name'].lower(), tA_port['name'].lower(), tB_att['name'].lower(), tB_port['name'].lower()]
             
-            if is_personale and target_user not in nomi_match:
+            # Se siamo in vista personale e non siamo admin, filtriamo. L'admin vede tutto.
+            if is_personale and target_user != "admin" and target_user not in nomi_match:
                 continue
 
             biliardino_num = idx + 1
