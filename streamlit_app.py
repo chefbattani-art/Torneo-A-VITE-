@@ -9,241 +9,221 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
-st.set_page_config(page_title="TORNEO A VITE // ESPORTS ARENA", page_icon="⚡", layout="centered")
+st.set_page_config(page_title="PRO TOURNAMENT // ESPORTS ARENA", page_icon="🏆", layout="centered")
 
-# --- STILE GRAFICO GAMING ELETTRICO & NEON ---
+# --- STILE GRAFICO PRO ESPORTS (BLU NEON, ORO, VIOLETTO) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap');
 
-    /* Sfondo Generale Cyberpunk / Elettrico */
+    /* Sfondo Arena Pro */
     .main { 
-        background-color: #030712; 
+        background-color: #02040a; 
         background-image: 
-            radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
-            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-        background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.07) 0%, transparent 50%),
+            radial-gradient(circle at 50% 100%, rgba(176, 38, 255, 0.07) 0%, transparent 50%),
+            linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
         font-family: 'Rajdhani', sans-serif;
+        color: #f8fafc;
     }
 
     h1, h2, h3, h4, .stMarkdown {
         font-family: 'Orbitron', sans-serif !important;
     }
 
-    /* Banner Turno In Evidenza - Neon Blu/Viola Elettrico */
-    .turn-banner {
-        background: linear-gradient(135deg, #1e1b4b, #312e81);
-        border: 2px solid #818cf8;
-        border-radius: 12px;
-        padding: 14px 20px;
+    /* Banner Turno - Neon Blu Elettrico */
+    .pro-turn-banner {
+        background: linear-gradient(135deg, #050b14, #0b192c);
+        border-left: 5px solid #00f3ff;
+        border-right: 5px solid #00f3ff;
+        border-top: 1px solid rgba(0, 243, 255, 0.3);
+        border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+        border-radius: 6px;
+        padding: 16px;
         text-align: center;
-        color: #e0e7ff;
+        color: #00f3ff;
         font-family: 'Orbitron', sans-serif;
         font-size: 1.3em;
         font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 3px;
-        margin-bottom: 20px;
-        box-shadow: 0 0 20px rgba(129, 140, 248, 0.4), inset 0 0 15px rgba(59, 130, 246, 0.3);
+        letter-spacing: 4px;
+        margin-bottom: 25px;
+        box-shadow: 0 0 25px rgba(0, 243, 255, 0.15), inset 0 0 15px rgba(0, 243, 255, 0.1);
     }
 
-    /* Avviso Informativo Rosso / Pericolo Neon */
-    .info-red-box {
-        background: linear-gradient(135deg, #450a0a, #7f1d1d);
-        border: 2px solid #f87171;
-        border-radius: 12px;
-        padding: 14px 18px;
-        color: #fee2e2;
-        font-weight: 700;
-        font-size: 0.95em;
-        margin-bottom: 20px;
-        box-shadow: 0 0 15px rgba(248, 113, 113, 0.4);
-    }
-
-    /* Avviso Ultima Partita - Arancio Elettrico */
-    .last-match-warning {
-        background: linear-gradient(135deg, #431407, #7c2d12);
-        border: 2px dashed #fb923c;
+    /* Box Biliardino - Stile Tavolo da Gara */
+    .pro-match-card {
+        background: rgba(10, 15, 30, 0.7);
+        border: 1px solid rgba(0, 243, 255, 0.2);
         border-radius: 10px;
-        padding: 12px;
-        text-align: center;
-        color: #ffedd5;
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 800;
-        font-size: 0.9em;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 15px;
-        box-shadow: 0 0 20px rgba(251, 146, 60, 0.5);
+        padding: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
     }
 
-    /* Intestazione Biliardino - Neon Oro/Ambra */
-    .biliardino-header {
-        background: linear-gradient(90deg, #d97706, #fbbf24, #d97706);
-        color: #030712;
+    .biliardino-tag {
+        background: linear-gradient(90deg, #ffd700, #ffaa00);
+        color: #02040a;
         text-align: center;
         font-family: 'Orbitron', sans-serif;
         font-weight: 900;
-        font-size: 0.9em;
+        font-size: 0.8em;
         text-transform: uppercase;
         letter-spacing: 2px;
-        padding: 8px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+        padding: 6px;
+        border-radius: 4px;
+        margin-bottom: 14px;
+        box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
     }
 
-    /* Box Squadra / Coppia - Neon Verde Elettrico */
-    .team-box {
-        background: linear-gradient(145deg, #022c22, #064e3b);
-        border: 1px solid #34d399;
-        border-radius: 10px;
+    /* Box Squadre */
+    .pro-team-box {
+        background: #060c18;
+        border: 1px solid #1e293b;
+        border-radius: 6px;
         padding: 12px;
         text-align: center;
-        color: #ecfdf5;
-        box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
     }
 
-    .player-names {
+    .pro-player-names {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1em;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #ffd700 !important;
+        letter-spacing: 1.5px;
+        text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+    }
+
+    /* Separatore VS */
+    .pro-vs {
+        text-align: center;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 900;
+        color: #b026ff;
+        font-size: 1.1em;
+        margin: 10px 0;
+        letter-spacing: 3px;
+        text-shadow: 0 0 10px rgba(176, 38, 255, 0.5);
+    }
+
+    /* Pulsanti Vittoria - Gradiente Blu/Azzurro Neon */
+    .stButton > button {
+        width: 100% !important;
+        background: linear-gradient(135deg, #0056b3, #0099ff) !important;
+        color: #ffffff !important;
+        font-family: 'Orbitron', sans-serif !important;
+        font-weight: 700 !important;
+        border: 1px solid #00f3ff !important;
+        border-radius: 6px !important;
+        padding: 8px 0px !important;
+        font-size: 0.8em !important;
+        letter-spacing: 1.5px !important;
+        box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
+        transition: all 0.2s ease;
+    }
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #007bff, #00bfff) !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+        transform: translateY(-1px);
+    }
+
+    /* Pannelli Classifiche */
+    .pro-rank-container {
+        background: #060a14;
+        border: 1px solid #1e293b;
+        border-top: 3px solid #b026ff;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    
+    .pro-rank-header {
         font-family: 'Orbitron', sans-serif;
         font-size: 1.1em;
         font-weight: 900;
-        line-height: 1.4;
-        text-transform: uppercase;
-        color: #fde047 !important;
-        letter-spacing: 1px;
-        text-shadow: 0 0 8px rgba(253, 224, 71, 0.4);
-    }
-
-    /* Scritta VS centrale stile Neon Azzurro */
-    .vs-text {
-        text-align: center;
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 900;
-        color: #38bdf8;
-        font-size: 1.2em;
-        margin: 10px 0;
-        letter-spacing: 4px;
-        text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
-    }
-
-    /* Stile Pulsanti Vittoria - Gradiente Azzurro/Blu Elettrico con Glow */
-    .stButton > button {
-        width: 100% !important;
-        background: linear-gradient(135deg, #0284c7, #2563eb) !important;
-        color: #ffffff !important;
-        font-family: 'Orbitron', sans-serif !important;
-        font-weight: 800 !important;
-        border: 1px solid #38bdf8 !important;
-        border-radius: 8px !important;
-        padding: 8px 0px !important;
-        font-size: 0.85em !important;
-        letter-spacing: 1px !important;
-        box-shadow: 0 0 15px rgba(2, 132, 199, 0.4);
-        transition: all 0.3s ease;
-    }
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #0369a1, #1d4ed8) !important;
-        border-color: #7dd3fc !important;
-        box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
-        transform: translateY(-2px);
-    }
-
-    /* Box Classifiche - Cyber Panel */
-    .rank-container {
-        background: linear-gradient(145deg, #0f172a, #020617);
-        border: 1px solid #334155;
-        border-radius: 14px;
-        padding: 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(30, 41, 59, 0.5);
-    }
-    
-    .rank-header {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.15em;
-        font-weight: 900;
         text-transform: uppercase;
         letter-spacing: 2px;
-        margin-bottom: 14px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #38bdf8;
-        color: #38bdf8;
-        text-align: center;
-        text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #1e293b;
+        color: #00f3ff;
+        text-shadow: 0 0 8px rgba(0, 243, 255, 0.4);
     }
 
-    .player-row {
+    .pro-player-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #1e293b;
-        padding: 10px 14px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        font-size: 0.95em;
-        border: 1px solid #334155;
+        background: #0b1326;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 6px;
+        font-size: 0.9em;
+        border: 1px solid #13223f;
     }
     
-    .player-row-eliminated {
-        background: #090d16;
-        opacity: 0.7;
-        border: 1px solid #1f2937;
+    .pro-player-row-eliminated {
+        background: #03050a;
+        opacity: 0.5;
+        border: 1px solid #0f1523;
     }
     
-    .rank-name {
+    .pro-rank-name {
         font-family: 'Orbitron', sans-serif;
-        font-weight: 800;
+        font-weight: 700;
         text-transform: uppercase;
-        color: #facc15;
+        color: #ffd700;
     }
 
-    .rank-name-eliminated {
+    .pro-rank-name-eliminated {
         font-family: 'Orbitron', sans-serif;
-        font-weight: 800;
+        font-weight: 700;
         text-transform: uppercase;
         color: #ef4444;
         text-decoration: line-through;
     }
 
-    /* Stile Podio - Neon Dorato & Viola */
-    .podium-card {
-        background: linear-gradient(145deg, #2e1065, #0f172a);
-        border: 2px solid #a855f7;
-        border-radius: 16px;
-        padding: 20px;
+    /* Podio e Hall of Fame */
+    .pro-podium-card {
+        background: linear-gradient(145deg, #100824, #060a14);
+        border: 2px solid #b026ff;
+        border-radius: 10px;
+        padding: 18px;
         margin-bottom: 20px;
-        box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+        box-shadow: 0 0 25px rgba(176, 38, 255, 0.3);
     }
-    .podium-title {
+    .pro-podium-title {
         text-align: center;
         font-family: 'Orbitron', sans-serif;
-        font-size: 1.3em;
+        font-size: 1.2em;
         font-weight: 900;
-        color: #f3e8ff;
+        color: #e2e8f0;
         text-transform: uppercase;
         letter-spacing: 2px;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #7e22ce;
-        padding-bottom: 10px;
-        text-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+        margin-bottom: 16px;
+        border-bottom: 1px solid #b026ff;
+        padding-bottom: 8px;
+        text-shadow: 0 0 10px rgba(176, 38, 255, 0.5);
     }
-    .podium-row {
+    .pro-podium-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: rgba(15, 23, 42, 0.8);
-        padding: 12px 16px;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #475569;
+        background: #0b1326;
+        padding: 10px 14px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        border: 1px solid #1e293b;
     }
-    .podium-pos-1 { border-left: 6px solid #fbbf24; box-shadow: 0 0 12px rgba(251, 191, 36, 0.3); }
-    .podium-pos-2 { border-left: 6px solid #cbd5e1; box-shadow: 0 0 12px rgba(203, 213, 225, 0.3); }
-    .podium-pos-3 { border-left: 6px solid #d97706; box-shadow: 0 0 12px rgba(217, 119, 6, 0.3); }
-    .podium-pos-4 { border-left: 6px solid #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
+    .pos-1 { border-left: 4px solid #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+    .pos-2 { border-left: 4px solid #94a3b8; box-shadow: 0 0 10px rgba(148, 163, 184, 0.2); }
+    .pos-3 { border-left: 4px solid #d97706; box-shadow: 0 0 10px rgba(217, 119, 6, 0.2); }
+    .pos-4 { border-left: 4px solid #00f3ff; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
     
     div.block-container {
         padding-top: 1.5rem;
@@ -369,12 +349,12 @@ def genera_pdf_report():
     elements = []
     
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=20, textColor=colors.HexColor("#38bdf8"), alignment=1, spaceAfter=15)
-    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Heading2'], fontSize=14, textColor=colors.HexColor("#a855f7"), spaceBefore=15, spaceAfter=8)
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor("#00f3ff"), alignment=1, spaceAfter=15)
+    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Heading2'], fontSize=12, textColor=colors.HexColor("#b026ff"), spaceBefore=12, spaceAfter=6)
     normal_style = styles['Normal']
     
-    elements.append(Paragraph("⚡ ESPORTS ARENA - REPORT TORNEO A VITE", title_style))
-    elements.append(Paragraph("Storico Partite e Risultati Ufficiali", ParagraphStyle('Sub', parent=normal_style, alignment=1, textColor=colors.HexColor("#64748b"))))
+    elements.append(Paragraph("PRO ESPORTS ARENA // REPORT UFFICIALE", title_style))
+    elements.append(Paragraph("Storico Partite e Risultati del Torneo", ParagraphStyle('Sub', parent=normal_style, alignment=1, textColor=colors.HexColor("#94a3b8"))))
     elements.append(Spacer(1, 15))
     
     if st.session_state.match_history:
@@ -391,48 +371,21 @@ def genera_pdf_report():
                 
             t = Table(table_data, colWidths=[65, 200, 200, 85])
             t.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e1b4b")),
-                ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#060a14")),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor("#00f3ff")),
                 ('ALIGN', (0,0), (-1,-1), 'CENTER'),
                 ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
                 ('BOTTOMPADDING', (0,0), (-1,0), 6),
-                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#0f172a")),
+                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#0b1326")),
                 ('TEXTCOLOR', (0,1), (-1,-1), colors.HexColor("#e2e8f0")),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#334155")),
-                ('FONTSIZE', (0,0), (-1,-1), 9),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#1e293b")),
+                ('FONTSIZE', (0,0), (-1,-1), 8.5),
             ]))
             elements.append(t)
             elements.append(Spacer(1, 10))
     else:
         elements.append(Paragraph("Nessuna partita registrata nello storico.", normal_style))
         
-    elements.append(Spacer(1, 15))
-    elements.append(Paragraph("Classifica Finale / Podio", subtitle_style))
-    atts_sorted = sorted([p for p in st.session_state.players if p["role"] == "attaccante"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
-    ports_sorted = sorted([p for p in st.session_state.players if p["role"] == "portiere"], key=lambda x: (x["lives"], not x["eliminated"]), reverse=True)
-    
-    podio_data = [["Posizione", "Attaccanti Top", "Vite", "Portieri Top", "Vite"]]
-    for i in range(max(len(atts_sorted[:4]), len(ports_sorted[:4]))):
-        pos = f"{i+1}°"
-        att_name = atts_sorted[i]["name"].upper() if i < len(atts_sorted) else "-"
-        att_lives = f"{atts_sorted[i]['lives']} ❤️" if i < len(atts_sorted) else "-"
-        port_name = ports_sorted[i]["name"].upper() if i < len(ports_sorted) else "-"
-        port_lives = f"{ports_sorted[i]['lives']} ❤️" if i < len(ports_sorted) else "-"
-        podio_data.append([pos, att_name, att_lives, port_name, port_lives])
-        
-    t_podio = Table(podio_data, colWidths=[65, 175, 60, 175, 65])
-    t_podio.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#2e1065")),
-        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#475569")),
-        ('FONTSIZE', (0,0), (-1,-1), 9),
-        ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#0f172a")),
-        ('TEXTCOLOR', (0,1), (-1,-1), colors.HexColor("#e2e8f0")),
-    ]))
-    elements.append(t_podio)
-    
     doc.build(elements)
     buffer.seek(0)
     return buffer.getvalue()
@@ -442,33 +395,32 @@ admin_code = st.sidebar.text_input("Codice Amministratore", type="password", pla
 is_admin = (admin_code == "0000")
 
 if is_admin:
-    st.sidebar.success("MODALITÀ ADMIN ATTIVA 🔓")
+    st.sidebar.success("ADMIN MODE ACTIVE 🔓")
 else:
-    st.sidebar.info("Modalità Player / Viewer ⚡")
+    st.sidebar.info("Player / Viewer Mode ⚡")
 
-# --- PAGINA INIZIALE DI ACCESSO OBBLIGATO SE NON SELEZIONATO ---
 nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
 
 if st.session_state.giocatore_selezionato is None:
-    st.title("⚡ TORNEO A VITE // ARENA")
+    st.title("PRO TOURNAMENT ARENA")
     st.markdown("""
-        <div class="info-red-box" style="text-align: center; font-size: 1.1em;">
-            🎮 <b>PLAYER LOGIN:</b> Seleziona il tuo nickname dalla lista sottostante e premi <b>ACCEDI ALL'ARENA</b> per entrare nel match.
+        <div style="background: rgba(0, 243, 255, 0.05); border: 1px solid #00f3ff; border-radius: 6px; padding: 15px; text-align: center; font-size: 1em; color: #e2e8f0; margin-bottom: 20px;">
+            🎮 <b>PLAYER AUTH:</b> Seleziona il tuo profilo dalla lista per accedere all'interfaccia di gara.
         </div>
     """, unsafe_allow_html=True)
 
     if nomi_giocatori:
         with st.container(border=True):
-            st.markdown("### 👤 SELEZIONA IL TUO PROFILO:")
+            st.markdown("### 👤 SELEZIONA UTENTE:")
             nome_scelto_temp = st.selectbox("Iscritti:", nomi_giocatori, label_visibility="collapsed")
             
             col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
             with col_b2:
-                if st.button("🚀 ACCEDI ALL'ARENA", type="primary", use_container_width=True):
+                if st.button("ACCEDI ALLA COMPETIZIONE", type="primary", use_container_width=True):
                     st.session_state.giocatore_selezionato = nome_scelto_temp
                     st.rerun()
     else:
-        st.warning("⚠️ Nessun giocatore registrato nel sistema. Chiedi all'admin di importare i partecipanti.")
+        st.warning("⚠️ Nessun partecipante caricato. Inserisci i dati dal pannello Admin.")
         
     if is_admin:
         with st.expander("⚙️ Pannello Configurazione & Gestione (Admin)", expanded=True):
@@ -504,12 +456,12 @@ if st.session_state.giocatore_selezionato is None:
                             })
                             count_aggiunti += 1
                 salva_stato()
-                st.success(f"Importati {count_aggiunti} giocatori!")
+                st.success(f"Importati {count_aggiunti} giocatori.")
                 st.rerun()
 
             attaccanti = [p for p in st.session_state.players if p["role"] == "attaccante"]
             portieri = [p for p in st.session_state.players if p["role"] == "portiere"]
-            st.info(f"📊 Iscritti: ⚽️ {len(attaccanti)} Attaccanti | 🥅 {len(portieri)} Portieri")
+            st.info(f"📊 Registrati: ⚽️ {len(attaccanti)} Attaccanti | 🥅 {len(portieri)} Portieri")
 
             if len(st.session_state.players) >= 2:
                 if not st.session_state.tournament_started:
@@ -521,7 +473,7 @@ if st.session_state.giocatore_selezionato is None:
                         st.session_state.current_round_matches = genera_abbinamenti()
                         salva_stato()
                         st.rerun()
-                if st.button("🛑 Reset Totale"):
+                if st.button("🛑 Reset Torneo"):
                     st.session_state.tournament_started = False
                     st.session_state.current_round_matches = []
                     st.session_state.round_number = 0
@@ -534,20 +486,19 @@ if st.session_state.giocatore_selezionato is None:
 
     st.stop()
 
-# --- TITOLO PRINCIPALE TORNEO ---
-st.title("⚡ TORNEO A VITE // BATTLE ARENA")
+st.title("PRO ESPORTS ARENA")
 
 col_u1, col_u2 = st.columns([3, 1])
 with col_u1:
     giocatore_selezionato = st.session_state.giocatore_selezionato
-    st.info(f"🎮 Operatore attivo: **{giocatore_selezionato.upper()}**")
+    st.info(f"⚡ Operatore Connesso: **{giocatore_selezionato.upper()}**")
 with col_u2:
-    if st.button("🔄 Cambia Utente", use_container_width=True):
+    if st.button("🔄 Logout", use_container_width=True):
         st.session_state.giocatore_selezionato = None
         st.session_state.vista_personale_attiva = False
         st.rerun()
 
-etichetta_occhio = "👁️ Disattiva Vista Personale" if st.session_state.vista_personale_attiva else "👁️ Vista Personale (Solo la mia partita)"
+etichetta_occhio = "👁️ Disattiva Filtro Personale" if st.session_state.vista_personale_attiva else "👁️ Vista Personale (Mostra solo i miei match)"
 if st.button(etichetta_occhio, use_container_width=True):
     st.session_state.vista_personale_attiva = not st.session_state.vista_personale_attiva
     st.rerun()
@@ -587,12 +538,12 @@ if is_admin:
                             })
                             count_aggiunti += 1
                 salva_stato()
-                st.success(f"Importati {count_aggiunti} giocatori!")
+                st.success(f"Importati {count_aggiunti} giocatori.")
                 st.rerun()
 
         attaccanti = [p for p in st.session_state.players if p["role"] == "attaccante"]
         portieri = [p for p in st.session_state.players if p["role"] == "portiere"]
-        st.info(f"📊 Iscritti: ⚽️ {len(attaccanti)} Attaccanti | 🥅 {len(portieri)} Portieri")
+        st.info(f"📊 Registrati: ⚽️ {len(attaccanti)} Attaccanti | 🥅 {len(portieri)} Portieri")
 
         if len(st.session_state.players) >= 2:
             col_act1, col_act2 = st.columns(2)
@@ -607,7 +558,7 @@ if is_admin:
                         salva_stato()
                         st.rerun()
             with col_act2:
-                if st.button("🛑 Reset Totale"):
+                if st.button("🛑 Reset Torneo"):
                     st.session_state.tournament_started = False
                     st.session_state.current_round_matches = []
                     st.session_state.round_number = 0
@@ -622,9 +573,9 @@ if st.session_state.tournament_started:
     pdf_data = genera_pdf_report()
     st.sidebar.markdown("---")
     st.sidebar.download_button(
-        label="📥 Scarica Report PDF Partite",
+        label="📥 Download Report PDF",
         data=pdf_data,
-        file_name="report_torneo_esports.pdf",
+        file_name="report_torneo_pro.pdf",
         mime="application/pdf",
         use_container_width=True
     )
@@ -638,8 +589,8 @@ torneo_finito = st.session_state.tournament_started and (len(attivi_att) < 2 or 
 if st.session_state.tournament_started:
     if torneo_finito:
         st.markdown("""
-            <div style="text-align: center; font-family: 'Orbitron', sans-serif; font-size: 2em; font-weight: 900; color: #fbbf24; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 3px; text-shadow: 0 0 15px rgba(251, 191, 36, 0.6);">
-                🏆 HALL OF FAME // PODIO FINALE 🏆
+            <div style="text-align: center; font-family: 'Orbitron', sans-serif; font-size: 1.8em; font-weight: 900; color: #ffd700; text-transform: uppercase; margin-bottom: 25px; letter-spacing: 3px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);">
+                🏆 HALL OF FAME // PODIO UFFICIALE 🏆
             </div>
         """, unsafe_allow_html=True)
         
@@ -649,44 +600,44 @@ if st.session_state.tournament_started:
         col_pod1, col_pod2 = st.columns(2)
         with col_pod1:
             st.markdown("""
-                <div class="podium-card">
-                    <div class="podium-title">⚽️ Top Attaccanti</div>
+                <div class="pro-podium-card">
+                    <div class="pro-podium-title">⚽️ Top Attaccanti</div>
             """, unsafe_allow_html=True)
             for rank, p in enumerate(atts_sorted[:4]):
                 cuori = "❤️ " * p["lives"]
                 bare = "⚰️ " * (p["max_lives"] - p["lives"])
-                pos_class = f"podium-pos-{rank+1}"
+                pos_class = f"pos-{rank+1}"
                 st.markdown(f"""
-                    <div class="podium-row {pos_class}">
+                    <div class="pro-podium-row {pos_class}">
                         <span style="font-family: 'Orbitron', sans-serif; font-weight: 900; color: #f8fafc;">{rank+1}°</span>
-                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 800; color: #facc15; text-transform: uppercase;">{p['name']}</span>
-                        <span style="font-size: 0.85em;">{cuori}{bare}</span>
+                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 700; color: #ffd700; text-transform: uppercase;">{p['name']}</span>
+                        <span style="font-size: 0.8em;">{cuori}{bare}</span>
                     </div>
                 """, unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             
         with col_pod2:
             st.markdown("""
-                <div class="podium-card">
-                    <div class="podium-title">🥅 Top Portieri</div>
+                <div class="pro-podium-card">
+                    <div class="pro-podium-title">🥅 Top Portieri</div>
             """, unsafe_allow_html=True)
             for rank, p in enumerate(ports_sorted[:4]):
                 cuori = "❤️ " * p["lives"]
                 bare = "⚰️ " * (p["max_lives"] - p["lives"])
-                pos_class = f"podium-pos-{rank+1}"
+                pos_class = f"pos-{rank+1}"
                 st.markdown(f"""
-                    <div class="podium-row {pos_class}">
+                    <div class="pro-podium-row {pos_class}">
                         <span style="font-family: 'Orbitron', sans-serif; font-weight: 900; color: #f8fafc;">{rank+1}°</span>
-                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 800; color: #facc15; text-transform: uppercase;">{p['name']}</span>
-                        <span style="font-size: 0.85em;">{cuori}{bare}</span>
+                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 700; color: #ffd700; text-transform: uppercase;">{p['name']}</span>
+                        <span style="font-size: 0.8em;">{cuori}{bare}</span>
                     </div>
                 """, unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             
         st.download_button(
-            label="📄 Scarica Report Finale in PDF",
+            label="📄 Scarica Report Finale PDF",
             data=pdf_data,
-            file_name="report_finale_esports.pdf",
+            file_name="report_finale_pro.pdf",
             mime="application/pdf",
             use_container_width=True
         )
@@ -700,7 +651,7 @@ if st.session_state.tournament_started:
             st.rerun()
 
         if is_admin and len(st.session_state.history) > 0:
-            if st.button("↩️ Annulla Ultimo Risultato (Undo)", type="secondary", use_container_width=True):
+            if st.button("↩️ Annulla Ultima Azione (Undo)", type="secondary", use_container_width=True):
                 last_state = st.session_state.history.pop()
                 st.session_state.players = last_state.get("players", st.session_state.players)
                 st.session_state.current_round_matches = last_state.get("current_round_matches", {})
@@ -709,21 +660,15 @@ if st.session_state.tournament_started:
                 salva_stato()
                 st.rerun()
 
-        st.markdown("""
-            <div style="background: linear-gradient(135deg, #78350f, #b45309); border: 2px solid #fbbf24; border-radius: 12px; padding: 12px 18px; color: #fef3c7; font-weight: 700; font-size: 0.95em; text-align: center; margin-bottom: 20px; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);">
-                ⚡ <b>REGOLA MATCH:</b> Assegna la vittoria cliccando sul pulsante della squadra vincente!
-            </div>
-        """, unsafe_allow_html=True)
-
         st.markdown(f"""
-            <div class="turn-banner">
-                ⚔️ TURNO N° {st.session_state.round_number}
+            <div class="pro-turn-banner">
+                ⚔️ TURNO DI GARA N° {st.session_state.round_number}
             </div>
         """, unsafe_allow_html=True)
         
         if data_turno and data_turno.get("pass"):
             pass_names = ", ".join([f"{p['name'].upper()}" for p in data_turno["pass"]])
-            st.info(f"💚 **In Attesa / Ripposo (Pass):** {pass_names}")
+            st.info(f"🛡️ **Riposo / Turno di Pass:** {pass_names}")
 
         partite = data_turno.get("partite", []) if data_turno else []
         
@@ -744,20 +689,13 @@ if st.session_state.tournament_started:
                         partite_filtrate.append((idx, match))
                 
                 if not partite_filtrate:
-                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non è impegnato in questo turno.")
+                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non ha match attivi in questo turno.")
                 else:
-                    st.markdown(f"#### 🎯 Match attivo per: {giocatore_selezionato.upper()} (Vista Personale)")
+                    st.markdown(f"#### 🎯 Match attivo per: {giocatore_selezionato.upper()}")
                 
                 iter_partite = partite_filtrate
             else:
-                is_last_match_of_round = (len(partite_in_corso) == 1 and len(partite_in_coda) == 0)
-                if is_last_match_of_round:
-                    st.markdown("""
-                        <div class="last-match-warning">
-                            ⚠️ ULTIMO MATCH DEL TURNO! Assegnando la vittoria si passerà direttamente al turno successivo.
-                        </div>
-                    """, unsafe_allow_html=True)
-                st.markdown("#### 🏟️ ARENA MATCH IN CORSO")
+                st.markdown("#### 🏟️ TAVOLI ATTIVI IN ARENA")
                 iter_partite = [(idx, match) for idx, match in enumerate(partite_in_corso)]
 
             for idx, match in iter_partite:
@@ -768,121 +706,123 @@ if st.session_state.tournament_started:
                 giocatore_nella_squadra_a = any(n.lower() == giocatore_selezionato.lower() for n in [tA_att['name'], tA_port['name']])
                 giocatore_nella_squadra_b = any(n.lower() == giocatore_selezionato.lower() for n in [tB_att['name'], tB_port['name']])
 
-                with st.container(border=True):
-                    st.markdown(f"""
-                        <div class="biliardino-header">📍 BILIARDINO N. {biliardino_num}</div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                        <div class="team-box">
-                            <div class="player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    mostra_tasto_A = is_admin or is_vista_personale or giocatore_nella_squadra_a
-                    
-                    if mostra_tasto_A:
-                        if st.button("⚡ VITTORIA SQUADRA A", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
-                            salva_snapshot()
-                            
-                            match_record = {
-                                "turno": st.session_state.round_number,
-                                "partite": [{
-                                    "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
-                                    "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
-                                    "vincitore": f"Vittoria Squadra A (⚽️ {tA_att['name'].upper()} & 🥅 {tA_port['name'].upper()})"
-                                }]
-                            }
-                            found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
-                            if found_h:
-                                found_h["partite"].append(match_record["partite"][0])
-                            else:
-                                st.session_state.match_history.append(match_record)
+                st.markdown(f"""
+                    <div class="pro-match-card">
+                        <div class="biliardino-tag">📍 BILIARDINO N. {biliardino_num}</div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                    <div class="pro-team-box">
+                        <div class="pro-player-names">⚽️ {tA_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tA_port['name'].upper()}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                mostra_tasto_A = is_admin or is_vista_personale or giocatore_nella_squadra_a
+                
+                if mostra_tasto_A:
+                    if st.button("⚡ REGISTRA VITTORIA SQUADRA A", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
+                        salva_snapshot()
+                        
+                        match_record = {
+                            "turno": st.session_state.round_number,
+                            "partite": [{
+                                "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
+                                "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
+                                "vincitore": f"Vittoria Squadra A (⚽️ {tA_att['name'].upper()} & 🥅 {tA_port['name'].upper()})"
+                            }]
+                        }
+                        found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
+                        if found_h:
+                            found_h["partite"].append(match_record["partite"][0])
+                        else:
+                            st.session_state.match_history.append(match_record)
 
-                            for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                            for per in [tB_att, tB_port]:
-                                per["last_result"] = 'L'
-                                per["lives"] = max(0, per["lives"] - 1)
-                                if per["lives"] == 0: per["eliminated"] = True
+                        for v in [tA_att, tA_port]: v["last_result"] = 'W'
+                        for per in [tB_att, tB_port]:
+                            per["last_result"] = 'L'
+                            per["lives"] = max(0, per["lives"] - 1)
+                            if per["lives"] == 0: per["eliminated"] = True
+                        
+                        st.session_state.current_round_matches["partite"].pop(idx)
+                        
+                        if not st.session_state.current_round_matches["partite"]:
+                            st.session_state.round_number += 1
+                            st.session_state.current_round_matches = genera_abbinamenti()
                             
-                            st.session_state.current_round_matches["partite"].pop(idx)
-                            
-                            if not st.session_state.current_round_matches["partite"]:
-                                st.session_state.round_number += 1
-                                st.session_state.current_round_matches = genera_abbinamenti()
-                                
-                            salva_stato()
-                            st.rerun()
-                    
-                    st.markdown("<div class='vs-text'>VS</div>", unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                        <div class="team-box">
-                            <div class="player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    mostra_tasto_B = is_admin or is_vista_personale or giocatore_nella_squadra_b
+                        salva_stato()
+                        st.rerun()
+                
+                st.markdown("<div class='pro-vs'>VS</div>", unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                    <div class="pro-team-box">
+                        <div class="pro-player-names">⚽️ {tB_att['name'].upper()} &nbsp;|&nbsp; 🥅 {tB_port['name'].upper()}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                mostra_tasto_B = is_admin or is_vista_personale or giocatore_nella_squadra_b
 
-                    if mostra_tasto_B:
-                        if st.button("⚡ VITTORIA SQUADRA B", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
-                            salva_snapshot()
-                            
-                            match_record = {
-                                "turno": st.session_state.round_number,
-                                "partite": [{
-                                    "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
-                                    "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
-                                    "vincitore": f"Vittoria Squadra B (⚽️ {tB_att['name'].upper()} & 🥅 {tB_port['name'].upper()})"
-                                }]
-                            }
-                            found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
-                            if found_h:
-                                found_h["partite"].append(match_record["partite"][0])
-                            else:
-                                st.session_state.match_history.append(match_record)
+                if mostra_tasto_B:
+                    if st.button("⚡ REGISTRA VITTORIA SQUADRA B", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
+                        salva_snapshot()
+                        
+                        match_record = {
+                            "turno": st.session_state.round_number,
+                            "partite": [{
+                                "tA_att": tA_att['name'].upper(), "tA_port": tA_port['name'].upper(),
+                                "tB_att": tB_att['name'].upper(), "tB_port": tB_port['name'].upper(),
+                                "vincitore": f"Vittoria Squadra B (⚽️ {tB_att['name'].upper()} & 🥅 {tB_port['name'].upper()})"
+                            }]
+                        }
+                        found_h = next((h for h in st.session_state.match_history if h["turno"] == st.session_state.round_number), None)
+                        if found_h:
+                            found_h["partite"].append(match_record["partite"][0])
+                        else:
+                            st.session_state.match_history.append(match_record)
 
-                            for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                            for per in [tA_att, tA_port]:
-                                per["last_result"] = 'L'
-                                per["lives"] = max(0, per["lives"] - 1)
-                                if per["lives"] == 0: per["eliminated"] = True
+                        for v in [tB_att, tB_port]: v["last_result"] = 'W'
+                        for per in [tA_att, tA_port]:
+                            per["last_result"] = 'L'
+                            per["lives"] = max(0, per["lives"] - 1)
+                            if per["lives"] == 0: per["eliminated"] = True
+                        
+                        st.session_state.current_round_matches["partite"].pop(idx)
+                        
+                        if not st.session_state.current_round_matches["partite"]:
+                            st.session_state.round_number += 1
+                            st.session_state.current_round_matches = genera_abbinamenti()
                             
-                            st.session_state.current_round_matches["partite"].pop(idx)
-                            
-                            if not st.session_state.current_round_matches["partite"]:
-                                st.session_state.round_number += 1
-                                st.session_state.current_round_matches = genera_abbinamenti()
-                                
-                            salva_stato()
-                            st.rerun()
+                        salva_stato()
+                        st.rerun()
+                
+                st.markdown("</div>", unsafe_allow_html=True)
                 
             if partite_in_coda and not is_vista_personale:
-                st.markdown("#### ⏳ MATCH IN CODA D'ATTESA")
+                st.markdown("#### ⏳ MATCH IN CODA")
                 for q_idx, q_match in enumerate(partite_in_coda):
                     qa, qp = q_match["teamA"]
                     qb, qpp = q_match["teamB"]
-                    st.warning(f"Coda #{q_idx+1}: [⚽️ {qa['name'].upper()} & 🥅 {qp['name'].upper()}] vs [⚽️ {qb['name'].upper()} & 🥅 {qpp['name'].upper()}]")
+                    st.info(f"Coda #{q_idx+1}: [⚽️ {qa['name'].upper()} & 🥅 {qp['name'].upper()}] vs [⚽️ {qb['name'].upper()} & 🥅 {qpp['name'].upper()}]")
 
 st.markdown("---")
 
-# --- CLASSIFICA & VITE AGGIORNATA ---
+# --- CLASSIFICA E VITE ---
 if st.session_state.players:
-    st.markdown("### 📊 STATS & VITE GIOCATORI")
+    st.markdown("### 📊 STATISTICHE & VITE GIOCATORI")
     col_c1, col_c2 = st.columns(2)
     
     with col_c1:
         st.markdown("""
-            <div class="rank-container">
-                <div class="rank-header">⚽️ ATTACCANTI STATS</div>
+            <div class="pro-rank-container">
+                <div class="pro-rank-header">⚽️ ATTACCANTI</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             cuori = "❤️ " * p["lives"]
             bare = "⚰️ " * (p["max_lives"] - p["lives"])
             vite_display = cuori + bare
             
-            css_class = "player-row player-row-eliminated" if p["eliminated"] else "player-row"
-            name_class = "rank-name-eliminated" if p["eliminated"] else "rank-name"
+            css_class = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
+            name_class = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
             
             st.markdown(f"""
                 <div class="{css_class}">
@@ -894,16 +834,16 @@ if st.session_state.players:
         
     with col_c2:
         st.markdown("""
-            <div class="rank-container">
-                <div class="rank-header">🥅 PORTIERI STATS</div>
+            <div class="pro-rank-container">
+                <div class="pro-rank-header">🥅 PORTIERI</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             cuori = "❤️ " * p["lives"]
             bare = "⚰️ " * (p["max_lives"] - p["lives"])
             vite_display = cuori + bare
             
-            css_class = "player-row player-row-eliminated" if p["eliminated"] else "player-row"
-            name_class = "rank-name-eliminated" if p["eliminated"] else "rank-name"
+            css_class = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
+            name_class = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
             
             st.markdown(f"""
                 <div class="{css_class}">
