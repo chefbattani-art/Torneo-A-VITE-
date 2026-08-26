@@ -288,7 +288,7 @@ def genera_abbinamenti():
     else:
         atts_w = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") == 'W']
         atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") != 'W']
-        ports_w = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") == 'W']
+        ports_w = [p for p in attivi if p["role"] == "portiere" and p.get("last_result"] == 'W']
         ports_l = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") != 'W']
         
         random.shuffle(atts_w)
@@ -327,7 +327,6 @@ def genera_pdf_report():
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor("#00f3ff"), alignment=1, spaceAfter=15)
     subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Heading2'], fontSize=12, textColor=colors.HexColor("#b026ff"), spaceBefore=12, spaceAfter=6)
-    normal_style = styles['Normal']
     
     elements.append(Paragraph("PRO ESPORTS ARENA // REPORT UFFICIALE", title_style))
     elements.append(Spacer(1, 15))
@@ -453,7 +452,7 @@ if st.session_state.tournament_started:
         else:
             st.markdown("### 🔥 PARTITE IN CORSO (Sui biliardini):")
 
-        for idx, match in partite_in_corso:
+        for idx, match in enumerate(partite_in_corso):
             tA_att, tA_port = match["teamA"]
             tB_att, tB_port = match["teamB"]
             nomi_match = [tA_att['name'].lower(), tA_port['name'].lower(), tB_att['name'].lower(), tB_port['name'].lower()]
