@@ -10,9 +10,9 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
-st.set_page_config(page_title="PRO TOURNAMENT // ESPORTS ARENA", page_icon="🏆", layout="centered")
+st.set_page_config(page_title="TORNEO BARAONDA A VITE // BY BATTANI", page_icon="🏆", layout="centered")
 
-# --- STILE GRAFICO PRO ESPORTS DEFINITIVO ---
+# --- STILE GRAFICO TORNEO BARAONDA CON NEON VERDE LIVE GAME ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap');
@@ -20,8 +20,8 @@ st.markdown("""
     .main { 
         background-color: #02040a; 
         background-image: 
-            radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.07) 0%, transparent 50%),
-            radial-gradient(circle at 50% 100%, rgba(176, 38, 255, 0.07) 0%, transparent 50%),
+            radial-gradient(circle at 50% 0%, rgba(0, 255, 128, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 50% 100%, rgba(0, 243, 255, 0.05) 0%, transparent 50%),
             linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
         background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
@@ -33,24 +33,25 @@ st.markdown("""
         font-family: 'Orbitron', sans-serif !important;
     }
 
-    /* Banner Turno */
+    /* Banner Turno con Neon Verde Live */
     .pro-turn-banner {
-        background: linear-gradient(135deg, #050b14, #0b192c);
-        border-left: 5px solid #00f3ff;
-        border-right: 5px solid #00f3ff;
-        border-top: 1px solid rgba(0, 243, 255, 0.3);
-        border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+        background: linear-gradient(135deg, #021a0e, #052e16);
+        border-left: 5px solid #00ff88;
+        border-right: 5px solid #00ff88;
+        border-top: 1px solid rgba(0, 255, 136, 0.4);
+        border-bottom: 1px solid rgba(0, 255, 136, 0.4);
         border-radius: 6px;
         padding: 16px;
         text-align: center;
-        color: #00f3ff;
+        color: #00ff88;
         font-family: 'Orbitron', sans-serif;
         font-size: 1.3em;
         font-weight: 900;
         text-transform: uppercase;
         letter-spacing: 4px;
         margin-bottom: 25px;
-        box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);
+        box-shadow: 0 0 30px rgba(0, 255, 136, 0.25);
+        text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
     }
 
     /* Banner Ultima Partita */
@@ -82,12 +83,12 @@ st.markdown("""
     }
     .neon-summary-title {
         font-family: 'Orbitron', sans-serif;
-        color: #00f3ff;
+        color: #00ff88;
         font-size: 1.5em;
         font-weight: 900;
         letter-spacing: 2px;
         margin-bottom: 15px;
-        text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+        text-shadow: 0 0 12px rgba(0, 255, 136, 0.7);
     }
     .neon-section-label {
         font-family: 'Orbitron', sans-serif;
@@ -108,14 +109,14 @@ st.markdown("""
         text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
     }
 
-    /* Card Tavolo Attivo */
+    /* Card Tavolo Attivo con Bordo Neon Verde Live */
     .pro-match-card {
-        background: linear-gradient(160deg, #070d1d, #03070f);
-        border: 2px solid rgba(0, 243, 255, 0.4);
+        background: linear-gradient(160deg, #04140a, #020804);
+        border: 2px solid rgba(0, 255, 136, 0.5);
         border-radius: 12px;
         padding: 18px;
         margin-bottom: 15px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 243, 255, 0.1);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 136, 0.15);
     }
 
     .pro-match-card-last {
@@ -149,29 +150,31 @@ st.markdown("""
     .biliardino-title {
         font-family: 'Orbitron', sans-serif;
         font-weight: 900;
-        color: #ffd700;
+        color: #00ff88;
         font-size: 1em;
         letter-spacing: 1.5px;
+        text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
     }
 
     .turno-badge {
-        background: #0f172a;
-        border: 1px solid #38bdf8;
-        color: #38bdf8;
+        background: #021a0e;
+        border: 1px solid #00ff88;
+        color: #00ff88;
         padding: 3px 10px;
         border-radius: 4px;
         font-family: 'Orbitron', sans-serif;
         font-size: 0.75em;
         font-weight: 700;
         letter-spacing: 1px;
+        box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
     }
 
     .match-teams-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: #0b1326;
-        border: 1px solid #1e293b;
+        background: #041f10;
+        border: 1px solid rgba(0, 255, 136, 0.3);
         border-radius: 8px;
         padding: 12px;
         text-align: center;
@@ -189,42 +192,42 @@ st.markdown("""
     .vs-badge {
         font-family: 'Orbitron', sans-serif;
         font-weight: 900;
-        color: #b026ff;
+        color: #00ff88;
         font-size: 1.1em;
         padding: 0 15px;
-        text-shadow: 0 0 8px rgba(176, 38, 255, 0.5);
+        text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
     }
 
-    /* Pulsanti Vittoria Personalizzati */
+    /* Pulsanti Vittoria Neon Verde Live */
     .stButton > button {
         width: 100% !important;
-        background: linear-gradient(135deg, #0056b3, #0099ff) !important;
+        background: linear-gradient(135deg, #022c14, #054f24) !important;
         color: #ffffff !important;
         font-family: 'Orbitron', sans-serif !important;
         font-weight: 700 !important;
-        border: 1px solid #00f3ff !important;
+        border: 1px solid #00ff88 !important;
         border-radius: 6px !important;
         padding: 10px 0px !important;
         font-size: 0.85em !important;
         letter-spacing: 1px !important;
-        box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
+        box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
         margin-top: 10px;
     }
     .stButton > button:hover {
-        background: linear-gradient(135deg, #007bff, #00bfff) !important;
+        background: linear-gradient(135deg, #04421f, #077336) !important;
         border-color: #ffffff !important;
-        box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+        box-shadow: 0 0 25px rgba(0, 255, 136, 0.8);
     }
 
     /* Tabelle Classifiche */
     .pro-rank-container {
-        background: #060a14;
-        border: 1px solid #1e293b;
-        border-top: 3px solid #b026ff;
+        background: #040d07;
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-top: 3px solid #00ff88;
         border-radius: 8px;
         padding: 16px;
         margin-bottom: 16px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(0, 255, 136, 0.08);
     }
     .pro-rank-header {
         font-family: 'Orbitron', sans-serif;
@@ -234,19 +237,20 @@ st.markdown("""
         letter-spacing: 2px;
         margin-bottom: 12px;
         padding-bottom: 6px;
-        border-bottom: 1px solid #1e293b;
-        color: #00f3ff;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+        color: #00ff88;
+        text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
     }
     .pro-player-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #0b1326;
+        background: #061c0e;
         padding: 8px 12px;
         border-radius: 4px;
         margin-bottom: 6px;
         font-size: 0.9em;
-        border: 1px solid #13223f;
+        border: 1px solid rgba(0, 255, 136, 0.15);
     }
     .pro-player-row-eliminated {
         background: #03050a;
@@ -320,7 +324,6 @@ if "initialized" not in st.session_state:
         st.session_state.current_round_matches = []
         st.session_state.round_number = 0
 
-# Recupera lo stato di login dai query parameters dell'URL (se presenti al refresh)
 query_params = st.query_params
 if "giocatore_selezionato" not in st.session_state:
     url_user = query_params.get("user", None)
@@ -393,10 +396,10 @@ def genera_pdf_report():
     doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor("#00f3ff"), alignment=1, spaceAfter=15)
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor("#00ff88"), alignment=1, spaceAfter=15)
     subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Heading2'], fontSize=12, textColor=colors.HexColor("#b026ff"), spaceBefore=12, spaceAfter=6)
     
-    elements.append(Paragraph("PRO ESPORTS ARENA // REPORT UFFICIALE", title_style))
+    elements.append(Paragraph("TORNEO BARAONDA A VITE // BY BATTANI - REPORT UFFICIALE", title_style))
     elements.append(Spacer(1, 15))
     
     if st.session_state.match_history:
@@ -409,10 +412,10 @@ def genera_pdf_report():
                 table_data.append([str(idx+1), tA, tB, m.get('vincitore', 'Completata')])
             t = Table(table_data, colWidths=[65, 200, 200, 85])
             t.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#060a14")),
-                ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor("#00f3ff")),
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#040d07")),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor("#00ff88")),
                 ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#1e293b")),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#00ff88")),
                 ('FONTSIZE', (0,0), (-1,-1), 8.5),
             ]))
             elements.append(t)
@@ -425,7 +428,6 @@ st.sidebar.title("🔐 SECURITY & ADMIN")
 admin_code = st.sidebar.text_input("Codice Amministratore", type="password", placeholder="Inserisci 0000")
 is_admin = (admin_code == "0000")
 
-# Se l'utente ha inserito il PIN corretto, mostriamo il pulsante per entrare subito come Admin
 if is_admin:
     st.sidebar.markdown("---")
     if st.sidebar.button("🚀 ACCEDI COME ADMIN", type="primary", use_container_width=True):
@@ -436,7 +438,7 @@ if is_admin:
 nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
 
 if st.session_state.giocatore_selezionato is None:
-    st.title("PRO TOURNAMENT ARENA")
+    st.title("TORNEO BARAONDA A VITE // BY BATTANI")
     if nomi_giocatori:
         with st.container(border=True):
             st.markdown("### 👤 SELEZIONA UTENTE:")
@@ -488,7 +490,7 @@ if st.session_state.giocatore_selezionato is None:
                 st.rerun()
     st.stop()
 
-st.title("PRO ESPORTS ARENA")
+st.title("TORNEO BARAONDA A VITE // BY BATTANI")
 col_u1, col_u2 = st.columns([3, 1])
 with col_u1:
     st.info(f"⚡ Operatore Connesso: **{st.session_state.giocatore_selezionato.upper()}**")
@@ -524,7 +526,7 @@ if is_admin:
 if st.session_state.tournament_started:
     pdf_data = genera_pdf_report()
     st.sidebar.markdown("---")
-    st.sidebar.download_button("📥 Download Report PDF", pdf_data, "report_torneo_pro.pdf", "application/pdf", use_container_width=True)
+    st.sidebar.download_button("📥 Download Report PDF", pdf_data, "report_torneo_baraonda.pdf", "application/pdf", use_container_width=True)
 
 st.markdown("---")
 
@@ -541,7 +543,7 @@ if st.session_state.tournament_started:
                 for nome in unici_vite:
                     vite_list_html += f'<div class="neon-name-item">{nome.upper()}</div>'
             else:
-                vite_list_html = '<div class="neon-name-item" style="color: #38bdf8;">NESSUNO</div>'
+                vite_list_html = '<div class="neon-name-item" style="color: #00ff88;">NESSUNO</div>'
 
             elim_list_html = ""
             if log_data["eliminati"]:
@@ -549,7 +551,7 @@ if st.session_state.tournament_started:
                 for nome in unici_elim:
                     elim_list_html += f'<div class="neon-name-item">{nome.upper()}</div>'
             else:
-                elim_list_html = '<div class="neon-name-item" style="color: #38bdf8;">NESSUN ELIMINATO</div>'
+                elim_list_html = '<div class="neon-name-item" style="color: #00ff88;">NESSUN ELIMINATO</div>'
 
             st.markdown(f"""
                 <div class="neon-summary-box">
@@ -604,12 +606,12 @@ if st.session_state.tournament_started:
                 st.markdown(f"""
                     <div class="pro-match-card-last">
                         <div class="match-header-row">
-                            <span class="biliardino-title" style="color: #ef4444;">🏟️ BILIARDINO {biliardino_num} (ULTIMO MATCH)</span>
-                            <span class="turno-badge" style="border-color: #ef4444; color: #ef4444;">TURNO {st.session_state.round_number}</span>
+                            <span class="biliardino-title" style="color: #ef4444; text-shadow: none;">🏟️ BILIARDINO {biliardino_num} (ULTIMO MATCH)</span>
+                            <span class="turno-badge" style="border-color: #ef4444; color: #ef4444; box-shadow: none;">TURNO {st.session_state.round_number}</span>
                         </div>
                         <div class="match-teams-row" style="background: #180505; border-color: #7f1d1d;">
                             <div class="team-box">🥅 {tA_port['name'].upper()} / ⚽️ {tA_att['name'].upper()}</div>
-                            <div class="vs-badge" style="color: #ef4444;">VS</div>
+                            <div class="vs-badge" style="color: #ef4444; text-shadow: none;">VS</div>
                             <div class="team-box">🥅 {tB_port['name'].upper()} / ⚽️ {tB_att['name'].upper()}</div>
                         </div>
                     </div>
@@ -691,12 +693,12 @@ if st.session_state.tournament_started:
                 st.markdown(f"""
                     <div class="pro-queue-card">
                         <div class="match-header-row">
-                            <span class="biliardino-title" style="color: #34d399;">⏳ IN CODA</span>
-                            <span class="turno-badge" style="border-color: #34d399; color: #34d399;">TURNO {st.session_state.round_number}</span>
+                            <span class="biliardino-title" style="color: #34d399; text-shadow: none;">⏳ IN CODA</span>
+                            <span class="turno-badge" style="border-color: #34d399; color: #34d399; box-shadow: none;">TURNO {st.session_state.round_number}</span>
                         </div>
-                        <div class="match-teams-row" style="background: #06120e;">
+                        <div class="match-teams-row" style="background: #06120e; border-color: rgba(52, 211, 153, 0.3);">
                             <div class="team-box">🥅 {qp['name'].upper()} / ⚽️ {qa['name'].upper()}</div>
-                            <div class="vs-badge" style="color: #34d399;">VS</div>
+                            <div class="vs-badge" style="color: #34d399; text-shadow: none;">VS</div>
                             <div class="team-box">🥅 {qpp['name'].upper()} / ⚽️ {qb['name'].upper()}</div>
                         </div>
                     </div>
