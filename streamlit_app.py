@@ -9,139 +9,170 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
-st.set_page_config(page_title="Torneo A Vite - Calcio Balilla", page_icon="⚽️", layout="centered")
+st.set_page_config(page_title="TORNEO A VITE // ESPORTS ARENA", page_icon="⚡", layout="centered")
 
-# --- STILE GRAFICO PROFESSIONALE (DASHBOARD SPORTIVA) ---
+# --- STILE GRAFICO GAMING ELETTRICO & NEON ---
 st.markdown("""
     <style>
-    .main { background-color: #0b0f19; }
-    
-    /* Banner Turno In Evidenza */
-    .turn-banner {
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-        border: 1px solid #60a5fa;
-        border-radius: 12px;
-        padding: 12px 20px;
-        text-align: center;
-        color: #ffffff;
-        font-size: 1.2em;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;700&display=swap');
+
+    /* Sfondo Generale Cyberpunk / Elettrico */
+    .main { 
+        background-color: #030712; 
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+        font-family: 'Rajdhani', sans-serif;
     }
 
-    /* Avviso Informativo Rosso */
+    h1, h2, h3, h4, .stMarkdown {
+        font-family: 'Orbitron', sans-serif !important;
+    }
+
+    /* Banner Turno In Evidenza - Neon Blu/Viola Elettrico */
+    .turn-banner {
+        background: linear-gradient(135deg, #1e1b4b, #312e81);
+        border: 2px solid #818cf8;
+        border-radius: 12px;
+        padding: 14px 20px;
+        text-align: center;
+        color: #e0e7ff;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.3em;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 20px rgba(129, 140, 248, 0.4), inset 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Avviso Informativo Rosso / Pericolo Neon */
     .info-red-box {
-        background: linear-gradient(135deg, #7c2d12, #991b1b);
-        border: 2px solid #ef4444;
+        background: linear-gradient(135deg, #450a0a, #7f1d1d);
+        border: 2px solid #f87171;
         border-radius: 12px;
         padding: 14px 18px;
         color: #fee2e2;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 0.95em;
         margin-bottom: 20px;
-        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 0 15px rgba(248, 113, 113, 0.4);
     }
 
-    /* Avviso Ultima Partita */
+    /* Avviso Ultima Partita - Arancio Elettrico */
     .last-match-warning {
-        background: linear-gradient(135deg, #7c2d12, #c2410c);
+        background: linear-gradient(135deg, #431407, #7c2d12);
         border: 2px dashed #fb923c;
         border-radius: 10px;
-        padding: 10px;
+        padding: 12px;
         text-align: center;
         color: #ffedd5;
+        font-family: 'Orbitron', sans-serif;
         font-weight: 800;
-        font-size: 0.95em;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 15px;
-        box-shadow: 0 0 15px rgba(234, 88, 12, 0.4);
-    }
-
-    /* Stile per l'intestazione del biliardino */
-    .biliardino-header {
-        background: linear-gradient(90deg, #f59e0b, #d97706);
-        color: #0f172a;
-        text-align: center;
-        font-weight: 800;
-        font-size: 0.85em;
+        font-size: 0.9em;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        padding: 6px;
-        border-radius: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 15px;
+        box-shadow: 0 0 20px rgba(251, 146, 60, 0.5);
     }
 
-    /* Box Squadra / Coppia */
+    /* Intestazione Biliardino - Neon Oro/Ambra */
+    .biliardino-header {
+        background: linear-gradient(90deg, #d97706, #fbbf24, #d97706);
+        color: #030712;
+        text-align: center;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 900;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        padding: 8px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+    }
+
+    /* Box Squadra / Coppia - Neon Verde Elettrico */
     .team-box {
-        background: linear-gradient(145deg, #064e3b, #022c22);
-        border: 1px solid #059669;
+        background: linear-gradient(145deg, #022c22, #064e3b);
+        border: 1px solid #34d399;
         border-radius: 10px;
-        padding: 10px;
+        padding: 12px;
         text-align: center;
         color: #ecfdf5;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
     }
 
     .player-names {
-        font-size: 1.05em;
-        font-weight: 800;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.1em;
+        font-weight: 900;
         line-height: 1.4;
         text-transform: uppercase;
-        color: #facc15 !important;
-        letter-spacing: 0.5px;
+        color: #fde047 !important;
+        letter-spacing: 1px;
+        text-shadow: 0 0 8px rgba(253, 224, 71, 0.4);
     }
 
-    /* Scritta VS centrale */
+    /* Scritta VS centrale stile Neon Azzurro */
     .vs-text {
         text-align: center;
+        font-family: 'Orbitron', sans-serif;
         font-weight: 900;
-        color: #f59e0b;
-        font-size: 1.1em;
-        margin: 8px 0;
-        letter-spacing: 2px;
+        color: #38bdf8;
+        font-size: 1.2em;
+        margin: 10px 0;
+        letter-spacing: 4px;
+        text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
     }
 
-    /* Stile Pulsanti Vittoria */
+    /* Stile Pulsanti Vittoria - Gradiente Azzurro/Blu Elettrico con Glow */
     .stButton > button {
         width: 100% !important;
-        background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+        background: linear-gradient(135deg, #0284c7, #2563eb) !important;
         color: #ffffff !important;
-        font-weight: 700 !important;
+        font-family: 'Orbitron', sans-serif !important;
+        font-weight: 800 !important;
         border: 1px solid #38bdf8 !important;
         border-radius: 8px !important;
-        padding: 6px 0px !important;
-        font-size: 0.8em !important;
-        box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);
+        padding: 8px 0px !important;
+        font-size: 0.85em !important;
+        letter-spacing: 1px !important;
+        box-shadow: 0 0 15px rgba(2, 132, 199, 0.4);
+        transition: all 0.3s ease;
     }
     .stButton > button:hover {
-        background: linear-gradient(135deg, #0369a1, #075985) !important;
+        background: linear-gradient(135deg, #0369a1, #1d4ed8) !important;
         border-color: #7dd3fc !important;
+        box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+        transform: translateY(-2px);
     }
 
-    /* Box Classifiche */
+    /* Box Classifiche - Cyber Panel */
     .rank-container {
-        background: linear-gradient(145deg, #131b2e, #0d1322);
-        border: 1px solid #1e293b;
+        background: linear-gradient(145deg, #0f172a, #020617);
+        border: 1px solid #334155;
         border-radius: 14px;
         padding: 16px;
         margin-bottom: 16px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(30, 41, 59, 0.5);
     }
     
     .rank-header {
+        font-family: 'Orbitron', sans-serif;
         font-size: 1.15em;
         font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
+        letter-spacing: 2px;
         margin-bottom: 14px;
         padding-bottom: 8px;
-        border-bottom: 3px solid #334155;
+        border-bottom: 2px solid #38bdf8;
         color: #38bdf8;
         text-align: center;
+        text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
     }
 
     .player-row {
@@ -149,7 +180,7 @@ st.markdown("""
         justify-content: space-between;
         align-items: center;
         background: #1e293b;
-        padding: 8px 12px;
+        padding: 10px 14px;
         border-radius: 8px;
         margin-bottom: 8px;
         font-size: 0.95em;
@@ -157,62 +188,66 @@ st.markdown("""
     }
     
     .player-row-eliminated {
-        background: #111827;
-        opacity: 0.8;
-        border: 1px solid #374151;
+        background: #090d16;
+        opacity: 0.7;
+        border: 1px solid #1f2937;
     }
     
     .rank-name {
+        font-family: 'Orbitron', sans-serif;
         font-weight: 800;
         text-transform: uppercase;
         color: #facc15;
     }
 
     .rank-name-eliminated {
+        font-family: 'Orbitron', sans-serif;
         font-weight: 800;
         text-transform: uppercase;
         color: #ef4444;
         text-decoration: line-through;
     }
 
-    /* Stile Podio */
+    /* Stile Podio - Neon Dorato & Viola */
     .podium-card {
-        background: linear-gradient(145deg, #1e1b4b, #0f172a);
-        border: 2px solid #6366f1;
+        background: linear-gradient(145deg, #2e1065, #0f172a);
+        border: 2px solid #a855f7;
         border-radius: 16px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
     }
     .podium-title {
         text-align: center;
-        font-size: 1.4em;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.3em;
         font-weight: 900;
-        color: #f8fafc;
+        color: #f3e8ff;
         text-transform: uppercase;
         letter-spacing: 2px;
         margin-bottom: 20px;
-        border-bottom: 2px solid #312e81;
+        border-bottom: 2px solid #7e22ce;
         padding-bottom: 10px;
+        text-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
     }
     .podium-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: rgba(30, 41, 59, 0.7);
-        padding: 10px 14px;
+        background: rgba(15, 23, 42, 0.8);
+        padding: 12px 16px;
         border-radius: 10px;
         margin-bottom: 10px;
-        border: 1px solid #334155;
+        border: 1px solid #475569;
     }
-    .podium-pos-1 { border-left: 6px solid #fbbf24; }
-    .podium-pos-2 { border-left: 6px solid #94a3b8; }
-    .podium-pos-3 { border-left: 6px solid #b45309; }
-    .podium-pos-4 { border-left: 6px solid #38bdf8; }
+    .podium-pos-1 { border-left: 6px solid #fbbf24; box-shadow: 0 0 12px rgba(251, 191, 36, 0.3); }
+    .podium-pos-2 { border-left: 6px solid #cbd5e1; box-shadow: 0 0 12px rgba(203, 213, 225, 0.3); }
+    .podium-pos-3 { border-left: 6px solid #d97706; box-shadow: 0 0 12px rgba(217, 119, 6, 0.3); }
+    .podium-pos-4 { border-left: 6px solid #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
     
     div.block-container {
-        padding-top: 1rem;
-        padding-bottom: 2rem;
+        padding-top: 1.5rem;
+        padding-bottom: 3rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -334,12 +369,12 @@ def genera_pdf_report():
     elements = []
     
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=20, textColor=colors.HexColor("#1e3a8a"), alignment=1, spaceAfter=15)
-    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Heading2'], fontSize=14, textColor=colors.HexColor("#334155"), spaceBefore=15, spaceAfter=8)
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=20, textColor=colors.HexColor("#38bdf8"), alignment=1, spaceAfter=15)
+    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Heading2'], fontSize=14, textColor=colors.HexColor("#a855f7"), spaceBefore=15, spaceAfter=8)
     normal_style = styles['Normal']
     
-    elements.append(Paragraph("⚽️ REPORT UFFICIALE - TORNEO A VITE", title_style))
-    elements.append(Paragraph("Storico Partite e Risultati", ParagraphStyle('Sub', parent=normal_style, alignment=1, textColor=colors.HexColor("#64748b"))))
+    elements.append(Paragraph("⚡ ESPORTS ARENA - REPORT TORNEO A VITE", title_style))
+    elements.append(Paragraph("Storico Partite e Risultati Ufficiali", ParagraphStyle('Sub', parent=normal_style, alignment=1, textColor=colors.HexColor("#64748b"))))
     elements.append(Spacer(1, 15))
     
     if st.session_state.match_history:
@@ -356,13 +391,14 @@ def genera_pdf_report():
                 
             t = Table(table_data, colWidths=[65, 200, 200, 85])
             t.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#3b82f6")),
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e1b4b")),
                 ('TEXTCOLOR', (0,0), (-1,0), colors.white),
                 ('ALIGN', (0,0), (-1,-1), 'CENTER'),
                 ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
                 ('BOTTOMPADDING', (0,0), (-1,0), 6),
-                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#f8fafc")),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#cbd5e1")),
+                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#0f172a")),
+                ('TEXTCOLOR', (0,1), (-1,-1), colors.HexColor("#e2e8f0")),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#334155")),
                 ('FONTSIZE', (0,0), (-1,-1), 9),
             ]))
             elements.append(t)
@@ -386,12 +422,14 @@ def genera_pdf_report():
         
     t_podio = Table(podio_data, colWidths=[65, 175, 60, 175, 65])
     t_podio.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e293b")),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#2e1065")),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#cbd5e1")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#475569")),
         ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#0f172a")),
+        ('TEXTCOLOR', (0,1), (-1,-1), colors.HexColor("#e2e8f0")),
     ]))
     elements.append(t_podio)
     
@@ -399,40 +437,39 @@ def genera_pdf_report():
     buffer.seek(0)
     return buffer.getvalue()
 
-st.sidebar.title("🔐 Accesso & Gestione")
+st.sidebar.title("🔐 SECURITY & ADMIN")
 admin_code = st.sidebar.text_input("Codice Amministratore", type="password", placeholder="Inserisci 0000")
 is_admin = (admin_code == "0000")
 
 if is_admin:
-    st.sidebar.success("Modo Amministratore Attivo 🔓")
+    st.sidebar.success("MODALITÀ ADMIN ATTIVA 🔓")
 else:
-    st.sidebar.info("Modalità Spettatore / Giocatore")
+    st.sidebar.info("Modalità Player / Viewer ⚡")
 
 # --- PAGINA INIZIALE DI ACCESSO OBBLIGATO SE NON SELEZIONATO ---
 nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
 
 if st.session_state.giocatore_selezionato is None:
-    st.title("⚽️ Benvenuto al Torneo a Vite")
+    st.title("⚡ TORNEO A VITE // ARENA")
     st.markdown("""
         <div class="info-red-box" style="text-align: center; font-size: 1.1em;">
-            👋 <b>FASE DI ACCESSO:</b> Per entrare nel torneo e visualizzare le partite, seleziona il tuo nome dall'elenco sottostante e clicca su <b>Accedi</b>.
+            🎮 <b>PLAYER LOGIN:</b> Seleziona il tuo nickname dalla lista sottostante e premi <b>ACCEDI ALL'ARENA</b> per entrare nel match.
         </div>
     """, unsafe_allow_html=True)
 
     if nomi_giocatori:
         with st.container(border=True):
-            st.markdown("### 👤 Seleziona il tuo profilo:")
+            st.markdown("### 👤 SELEZIONA IL TUO PROFILO:")
             nome_scelto_temp = st.selectbox("Iscritti:", nomi_giocatori, label_visibility="collapsed")
             
             col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
             with col_b2:
-                if st.button("🚀 Accedi al Torneo", type="primary", use_container_width=True):
+                if st.button("🚀 ACCEDI ALL'ARENA", type="primary", use_container_width=True):
                     st.session_state.giocatore_selezionato = nome_scelto_temp
                     st.rerun()
     else:
-        st.warning("⚠️ Nessun giocatore registrato nel sistema. Chiedi all'amministratore di importare i partecipanti dal pannello di gestione.")
+        st.warning("⚠️ Nessun giocatore registrato nel sistema. Chiedi all'admin di importare i partecipanti.")
         
-    # Pannello Admin accessibile anche dalla home se serve configurare/importare
     if is_admin:
         with st.expander("⚙️ Pannello Configurazione & Gestione (Admin)", expanded=True):
             col_conf1, col_conf2 = st.columns(2)
@@ -495,24 +532,22 @@ if st.session_state.giocatore_selezionato is None:
                         os.remove(STATE_FILE)
                     st.rerun()
 
-    st.stop() # Interrompe l'esecuzione finché non si effettua l'accesso
+    st.stop()
 
-# --- TITOLO PRINCIPALE TORNEO (UNA VOLTA EFFETTUATO L'ACCESSO) ---
-st.title("⚽️ Torneo a Vite")
+# --- TITOLO PRINCIPALE TORNEO ---
+st.title("⚡ TORNEO A VITE // BATTLE ARENA")
 
-# Mostriamo chi ha fatto l'accesso con opzione per cambiare utente
 col_u1, col_u2 = st.columns([3, 1])
 with col_u1:
     giocatore_selezionato = st.session_state.giocatore_selezionato
-    st.info(f"👤 Stai visualizzando il torneo come: **{giocatore_selezionato.upper()}**")
+    st.info(f"🎮 Operatore attivo: **{giocatore_selezionato.upper()}**")
 with col_u2:
     if st.button("🔄 Cambia Utente", use_container_width=True):
         st.session_state.giocatore_selezionato = None
         st.session_state.vista_personale_attiva = False
         st.rerun()
 
-# Pulsante per attivare/disattivare la vista personale dell'utente loggato
-etichetta_occhio = "👁️ Nascondi Vista Personale" if st.session_state.vista_personale_attiva else "👁️ Attiva Vista Personale (Solo la mia partita)"
+etichetta_occhio = "👁️ Disattiva Vista Personale" if st.session_state.vista_personale_attiva else "👁️ Vista Personale (Solo la mia partita)"
 if st.button(etichetta_occhio, use_container_width=True):
     st.session_state.vista_personale_attiva = not st.session_state.vista_personale_attiva
     st.rerun()
@@ -589,7 +624,7 @@ if st.session_state.tournament_started:
     st.sidebar.download_button(
         label="📥 Scarica Report PDF Partite",
         data=pdf_data,
-        file_name="report_torneo_calcio_balilla.pdf",
+        file_name="report_torneo_esports.pdf",
         mime="application/pdf",
         use_container_width=True
     )
@@ -603,8 +638,8 @@ torneo_finito = st.session_state.tournament_started and (len(attivi_att) < 2 or 
 if st.session_state.tournament_started:
     if torneo_finito:
         st.markdown("""
-            <div style="text-align: center; font-size: 2em; font-weight: 900; color: #f59e0b; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px;">
-                🏆 Podio Ufficiale Finale 🏆
+            <div style="text-align: center; font-family: 'Orbitron', sans-serif; font-size: 2em; font-weight: 900; color: #fbbf24; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 3px; text-shadow: 0 0 15px rgba(251, 191, 36, 0.6);">
+                🏆 HALL OF FAME // PODIO FINALE 🏆
             </div>
         """, unsafe_allow_html=True)
         
@@ -615,7 +650,7 @@ if st.session_state.tournament_started:
         with col_pod1:
             st.markdown("""
                 <div class="podium-card">
-                    <div class="podium-title">⚽️ Attaccanti Top 4</div>
+                    <div class="podium-title">⚽️ Top Attaccanti</div>
             """, unsafe_allow_html=True)
             for rank, p in enumerate(atts_sorted[:4]):
                 cuori = "❤️ " * p["lives"]
@@ -623,8 +658,8 @@ if st.session_state.tournament_started:
                 pos_class = f"podium-pos-{rank+1}"
                 st.markdown(f"""
                     <div class="podium-row {pos_class}">
-                        <span style="font-weight: 900; color: #f8fafc;">{rank+1}° Posto</span>
-                        <span style="font-weight: 800; color: #facc15; text-transform: uppercase;">{p['name']}</span>
+                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 900; color: #f8fafc;">{rank+1}°</span>
+                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 800; color: #facc15; text-transform: uppercase;">{p['name']}</span>
                         <span style="font-size: 0.85em;">{cuori}{bare}</span>
                     </div>
                 """, unsafe_allow_html=True)
@@ -633,7 +668,7 @@ if st.session_state.tournament_started:
         with col_pod2:
             st.markdown("""
                 <div class="podium-card">
-                    <div class="podium-title">🥅 Portieri Top 4</div>
+                    <div class="podium-title">🥅 Top Portieri</div>
             """, unsafe_allow_html=True)
             for rank, p in enumerate(ports_sorted[:4]):
                 cuori = "❤️ " * p["lives"]
@@ -641,17 +676,17 @@ if st.session_state.tournament_started:
                 pos_class = f"podium-pos-{rank+1}"
                 st.markdown(f"""
                     <div class="podium-row {pos_class}">
-                        <span style="font-weight: 900; color: #f8fafc;">{rank+1}° Posto</span>
-                        <span style="font-weight: 800; color: #facc15; text-transform: uppercase;">{p['name']}</span>
+                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 900; color: #f8fafc;">{rank+1}°</span>
+                        <span style="font-family: 'Orbitron', sans-serif; font-weight: 800; color: #facc15; text-transform: uppercase;">{p['name']}</span>
                         <span style="font-size: 0.85em;">{cuori}{bare}</span>
                     </div>
                 """, unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
             
         st.download_button(
-            label="📄 Scarica il Report Completo in PDF (Risultati & Podio)",
+            label="📄 Scarica Report Finale in PDF",
             data=pdf_data,
-            file_name="report_finale_torneo.pdf",
+            file_name="report_finale_esports.pdf",
             mime="application/pdf",
             use_container_width=True
         )
@@ -665,7 +700,7 @@ if st.session_state.tournament_started:
             st.rerun()
 
         if is_admin and len(st.session_state.history) > 0:
-            if st.button("↩️ Torna al Turno Precedente (Annulla Ultima Modifica)", type="secondary", use_container_width=True):
+            if st.button("↩️ Annulla Ultimo Risultato (Undo)", type="secondary", use_container_width=True):
                 last_state = st.session_state.history.pop()
                 st.session_state.players = last_state.get("players", st.session_state.players)
                 st.session_state.current_round_matches = last_state.get("current_round_matches", {})
@@ -674,22 +709,21 @@ if st.session_state.tournament_started:
                 salva_stato()
                 st.rerun()
 
-        # --- MESSAGGIO IMPORTANTE ---
         st.markdown("""
-            <div style="background: linear-gradient(135deg, #b45309, #d97706); border: 2px solid #f59e0b; border-radius: 12px; padding: 12px 18px; color: #fffbeb; font-weight: 700; font-size: 0.95em; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
-                🏆 <b>IMPORTANTE:</b> Chi ha vinto? Uno dei due giocatori deve assegnarsi la vittoria!
+            <div style="background: linear-gradient(135deg, #78350f, #b45309); border: 2px solid #fbbf24; border-radius: 12px; padding: 12px 18px; color: #fef3c7; font-weight: 700; font-size: 0.95em; text-align: center; margin-bottom: 20px; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);">
+                ⚡ <b>REGOLA MATCH:</b> Assegna la vittoria cliccando sul pulsante della squadra vincente!
             </div>
         """, unsafe_allow_html=True)
 
         st.markdown(f"""
             <div class="turn-banner">
-                ⚔️ Turno N° {st.session_state.round_number}
+                ⚔️ TURNO N° {st.session_state.round_number}
             </div>
         """, unsafe_allow_html=True)
         
         if data_turno and data_turno.get("pass"):
             pass_names = ", ".join([f"{p['name'].upper()}" for p in data_turno["pass"]])
-            st.info(f"💚 **Riposano (Pass):** {pass_names}")
+            st.info(f"💚 **In Attesa / Ripposo (Pass):** {pass_names}")
 
         partite = data_turno.get("partite", []) if data_turno else []
         
@@ -710,9 +744,9 @@ if st.session_state.tournament_started:
                         partite_filtrate.append((idx, match))
                 
                 if not partite_filtrate:
-                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non ha una partita attiva in questo turno (o è in pausa/riposo). Disattiva la vista personale per visualizzare l'intero torneo.")
+                    st.info(f"☕️ Al momento {giocatore_selezionato.upper()} non è impegnato in questo turno.")
                 else:
-                    st.markdown(f"#### 🎯 Partita di: {giocatore_selezionato.upper()} (Vista Personale 👁️)")
+                    st.markdown(f"#### 🎯 Match attivo per: {giocatore_selezionato.upper()} (Vista Personale)")
                 
                 iter_partite = partite_filtrate
             else:
@@ -720,10 +754,10 @@ if st.session_state.tournament_started:
                 if is_last_match_of_round:
                     st.markdown("""
                         <div class="last-match-warning">
-                            ⚠️ ULTIMA PARTITA DI QUESTO TURNO! Assegnando la vittoria, il torneo passerà subito al turno successivo.
+                            ⚠️ ULTIMO MATCH DEL TURNO! Assegnando la vittoria si passerà direttamente al turno successivo.
                         </div>
                     """, unsafe_allow_html=True)
-                st.markdown("#### 🏟️ Partite in Corso (Panoramica Torneo)")
+                st.markdown("#### 🏟️ ARENA MATCH IN CORSO")
                 iter_partite = [(idx, match) for idx, match in enumerate(partite_in_corso)]
 
             for idx, match in iter_partite:
@@ -736,7 +770,7 @@ if st.session_state.tournament_started:
 
                 with st.container(border=True):
                     st.markdown(f"""
-                        <div class="biliardino-header">📍 Biliardino N. {biliardino_num}</div>
+                        <div class="biliardino-header">📍 BILIARDINO N. {biliardino_num}</div>
                     """, unsafe_allow_html=True)
                     
                     st.markdown(f"""
@@ -748,7 +782,7 @@ if st.session_state.tournament_started:
                     mostra_tasto_A = is_admin or is_vista_personale or giocatore_nella_squadra_a
                     
                     if mostra_tasto_A:
-                        if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
+                        if st.button("⚡ VITTORIA SQUADRA A", key=f"win_A_{st.session_state.round_number}_{idx}", use_container_width=True):
                             salva_snapshot()
                             
                             match_record = {
@@ -791,7 +825,7 @@ if st.session_state.tournament_started:
                     mostra_tasto_B = is_admin or is_vista_personale or giocatore_nella_squadra_b
 
                     if mostra_tasto_B:
-                        if st.button("🏆 Assegna la Vittoria a questa Coppia", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
+                        if st.button("⚡ VITTORIA SQUADRA B", key=f"win_B_{st.session_state.round_number}_{idx}", use_container_width=True):
                             salva_snapshot()
                             
                             match_record = {
@@ -824,7 +858,7 @@ if st.session_state.tournament_started:
                             st.rerun()
                 
             if partite_in_coda and not is_vista_personale:
-                st.markdown("#### ⏳ In Coda")
+                st.markdown("#### ⏳ MATCH IN CODA D'ATTESA")
                 for q_idx, q_match in enumerate(partite_in_coda):
                     qa, qp = q_match["teamA"]
                     qb, qpp = q_match["teamB"]
@@ -834,13 +868,13 @@ st.markdown("---")
 
 # --- CLASSIFICA & VITE AGGIORNATA ---
 if st.session_state.players:
-    st.markdown("### 📊 Andamento Torneo & Vite Giocatori")
+    st.markdown("### 📊 STATS & VITE GIOCATORI")
     col_c1, col_c2 = st.columns(2)
     
     with col_c1:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">⚽️ VITE ATTACCANTI ⚽️</div>
+                <div class="rank-header">⚽️ ATTACCANTI STATS</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             cuori = "❤️ " * p["lives"]
@@ -861,7 +895,7 @@ if st.session_state.players:
     with col_c2:
         st.markdown("""
             <div class="rank-container">
-                <div class="rank-header">🥅 VITE PORTIERI 🥅</div>
+                <div class="rank-header">🥅 PORTIERI STATS</div>
         """, unsafe_allow_html=True)
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             cuori = "❤️ " * p["lives"]
