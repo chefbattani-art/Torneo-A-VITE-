@@ -394,6 +394,19 @@ if st.session_state.giocatore_selezionato is None:
                     st.session_state.current_round_matches = genera_abbinamenti()
                     salva_stato()
                     st.rerun()
+            
+            st.markdown("---")
+            if st.button("🔄 Reset Totale Torneo (Ricomincia da capo)", type="secondary"):
+                st.session_state.tournament_started = False
+                st.session_state.current_round_matches = []
+                st.session_state.round_number = 0
+                st.session_state.players = []
+                st.session_state.history = []
+                st.session_state.match_history = []
+                st.session_state.giocatore_selezionato = None
+                if os.path.exists(STATE_FILE): 
+                    os.remove(STATE_FILE)
+                st.rerun()
     st.stop()
 
 st.title("PRO ESPORTS ARENA")
@@ -413,12 +426,16 @@ if st.button(etichetta_occhio, use_container_width=True):
 
 if is_admin:
     with st.expander("⚙️ Pannello Configurazione & Gestione"):
-        if st.button("🛑 Reset Torneo"):
+        if st.button("🔄 Reset Totale Torneo (Ricomincia da capo)", type="secondary"):
             st.session_state.tournament_started = False
             st.session_state.current_round_matches = []
             st.session_state.round_number = 0
             st.session_state.players = []
-            if os.path.exists(STATE_FILE): os.remove(STATE_FILE)
+            st.session_state.history = []
+            st.session_state.match_history = []
+            st.session_state.giocatore_selezionato = None
+            if os.path.exists(STATE_FILE): 
+                os.remove(STATE_FILE)
             st.rerun()
 
 if st.session_state.tournament_started:
@@ -535,6 +552,8 @@ if st.session_state.players:
         for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
             css = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
             n_css = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
+            if "max_lives" not in p:
+                p["max_lives"] = max(p["lives"], st.session_state.initial_lives)
             vite_attive = "🟢 " * p["lives"]
             vite_perse = "🔴 " * (p["max_lives"] - p["lives"])
             pallini_str = vite_attive + vite_perse
@@ -545,6 +564,8 @@ if st.session_state.players:
         for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
             css = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
             n_css = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
+            if "max_lives" not in p:
+                p["max_lives"] = max(p["lives"], st.session_state.initial_lives)
             vite_attive = "🟢 " * p["lives"]
             vite_perse = "🔴 " * (p["max_lives"] - p["lives"])
             pallini_str = vite_attive + vite_perse
