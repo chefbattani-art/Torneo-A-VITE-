@@ -4,6 +4,7 @@ import re
 import json
 import os
 import io
+import time
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -69,24 +70,45 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
     }
 
-    /* Box Report Perdita Vite ed Eliminazioni */
-    .pro-report-box {
-        background: #0d111a;
-        border: 1px dashed #38bdf8;
-        border-radius: 6px;
-        padding: 10px 15px;
-        margin-bottom: 20px;
-        font-size: 0.95em;
+    /* Finestra Neon Gigante di Fine Turno */
+    .neon-summary-box {
+        background: linear-gradient(165deg, #0d0415, #1a0826);
+        border: 3px solid #b026ff;
+        border-radius: 16px;
+        padding: 25px;
+        margin: 20px 0;
+        text-align: center;
+        box-shadow: 0 0 35px rgba(176, 38, 255, 0.4), inset 0 0 20px rgba(176, 38, 255, 0.2);
     }
-    .pro-eliminated-box {
-        background: #1a0505;
-        border: 1px solid #ef4444;
-        border-radius: 6px;
-        padding: 10px 15px;
-        margin-bottom: 20px;
-        color: #fca5a5;
+    .neon-summary-title {
         font-family: 'Orbitron', sans-serif;
-        font-size: 0.95em;
+        color: #00f3ff;
+        font-size: 1.5em;
+        font-weight: 900;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    }
+    .neon-section-label {
+        font-family: 'Orbitron', sans-serif;
+        color: #f8fafc;
+        font-size: 1.1em;
+        font-weight: 700;
+        margin-top: 15px;
+        margin-bottom: 5px;
+    }
+    .neon-names-lives {
+        color: #38bdf8;
+        font-size: 1.2em;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+    .neon-names-eliminated {
+        color: #ef4444;
+        font-size: 1.3em;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
     }
 
     /* Card Tavolo Attivo */
@@ -493,7 +515,30 @@ st.markdown("---")
 
 if st.session_state.tournament_started:
     data_turno = st.session_state.current_round_matches
+    
+    # CONTROLLO FINE TURNO COMPLETO: Se la lista delle partite è vuota, significa che il turno è finito del tutto!
     if data_turno and not data_turno.get("partite"):
+        if "turno_report_log" in st.session_state and st.session_state.turno_report_log.get("vite_perse"):
+            log_data = st.session_state.turno_report_log
+            nomi_vite = ", ".join(set(log_data["vite_perse"])) if log_data["vite_perse"] else "Nessuno"
+            nomi_elim = ", ".join(set(log_data["eliminati"])) if log_data["eliminati"] else "Nessun eliminato"
+            
+            # Mostra la finestra neon gigante e blocca l'esecuzione per 5 secondi
+            st.markdown(f"""
+                <div class="neon-summary-box">
+                    <div class="neon-summary-title">⚡ REPORT FINALE TURNO N° {st.session_state.round_number} ⚡</div>
+                    <div class="neon-section-label">📉 GIOCATORI CHE HANNO PERSO UNA VITA:</div>
+                    <div class="neon-names-lives">{nomi_vite}</div>
+                    <br>
+                    <div class="neon-section-label">💀 GIOCATORI ELIMINATI DAL TORNEO:</div>
+                    <div class="neon-names-eliminated">{nomi_elim}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            time.sleep(5)
+            # Pulisci il log del turno appena concluso
+            st.session_state.turno_report_log = {"turno": -1, "vite_perse": [], "eliminati": []}
+
         st.session_state.round_number += 1
         st.session_state.current_round_matches = genera_abbinamenti()
         salva_stato()
@@ -586,10 +631,6 @@ if st.session_state.tournament_started:
                     st.session_state.turno_report_log["eliminati"].extend(periti_nomi)
 
                     st.session_state.current_round_matches["partite"].pop(idx)
-                    if not st.session_state.current_round_matches["partite"]:
-                        st.session_state.round_number += 1
-                        st.session_state.current_round_matches = genera_abbinamenti()
-                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
                     salva_stato()
                     st.rerun()
 
@@ -613,21 +654,8 @@ if st.session_state.tournament_started:
                     st.session_state.turno_report_log["eliminati"].extend(periti_nomi)
 
                     st.session_state.current_round_matches["partite"].pop(idx)
-                    if not st.session_state.current_round_matches["partite"]:
-                        st.session_state.round_number += 1
-                        st.session_state.current_round_matches = genera_abbinamenti()
-                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
                     salva_stato()
                     st.rerun()
-
-        if "turno_report_log" in st.session_state and st.session_state.turno_report_log["turno"] == st.session_state.round_number:
-            log_data = st.session_state.turno_report_log
-            if log_data["vite_perse"]:
-                nomi_vite = ", ".join(set(log_data["vite_perse"]))
-                st.markdown(f"""<div class="pro-report-box">📉 <b>Persone che hanno perso una vita in questo Turno ({st.session_state.round_number}):</b> {nomi_vite}</div>""", unsafe_allow_html=True)
-            if log_data["eliminati"]:
-                nomi_elim = ", ".join(set(log_data["eliminati"]))
-                st.markdown(f"""<div class="pro-eliminated-box">💀 <b>GIOCATORI ELIMINATI DEFINITIVAMENTE NEL TURNO {st.session_state.round_number}:</b> {nomi_elim}</div>""", unsafe_allow_html=True)
 
         if partite_in_coda and not is_personale:
             st.markdown("### 📢 PROSSIMI IN CODA:")
