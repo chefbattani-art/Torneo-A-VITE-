@@ -1,769 +1,479 @@
+
 import streamlit as st
 import random
 import re
 import json
 import os
-import io
-import time
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
 
-st.set_page_config(page_title="TORNEO BARAONDA A VITE // BY BATTANI", page_icon="🏆", layout="centered")
+st.set_page_config(page_title="CHAMPIONS BILIARDINO LIVE // BY BATTANI", page_icon="🏆", layout="wide")
 
-# --- STILE GRAFICO: NEON AZZURRI, RIFINITURE ORO E TITOLO NEON VERDE/ORO ---
 st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap');
-
-    .main { 
-        background-color: #02040a; 
-        background-image: 
-            radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 50% 100%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-            linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-        background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-        font-family: 'Rajdhani', sans-serif;
-        color: #f8fafc;
-    }
-
-    h1, h2, h3, h4, .stMarkdown {
-        font-family: 'Orbitron', sans-serif !important;
-    }
-
-    /* TITOLO PRINCIPALE CENTRALE CON NEON VERDE E ORO */
-    .hero-title-container {
-        text-align: center;
-        padding: 20px 10px;
-        margin-bottom: 20px;
-    }
-    .hero-main-title {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.8em;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 3px;
-        background: linear-gradient(135deg, #00ff88 0%, #d4af37 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-shadow: 0 0 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(212, 175, 55, 0.3);
-        margin-bottom: 5px;
-    }
-    .hero-subtitle {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 0.95em;
-        font-weight: 700;
-        color: #00f3ff;
-        letter-spacing: 4px;
-        text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
-    }
-
-    /* Banner Turno con Neon Azzurro e Dettagli Oro */
-    .pro-turn-banner {
-        background: linear-gradient(135deg, #02151a, #04262b);
-        border-left: 5px solid #00f3ff;
-        border-right: 5px solid #d4af37;
-        border-top: 1px solid rgba(0, 243, 255, 0.4);
-        border-bottom: 1px solid rgba(212, 175, 55, 0.4);
-        border-radius: 6px;
-        padding: 16px;
-        text-align: center;
-        color: #00f3ff;
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.3em;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 4px;
-        margin-bottom: 25px;
-        box-shadow: 0 0 25px rgba(0, 243, 255, 0.25), inset 0 0 10px rgba(212, 175, 55, 0.1);
-        text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
-    }
-
-    /* Banner Ultima Partita */
-    .pro-last-match-banner {
-        background: linear-gradient(135deg, #2c0b0b, #450a0a);
-        border: 2px solid #ef4444;
-        border-radius: 8px;
-        padding: 10px;
-        text-align: center;
-        color: #f87171;
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.1em;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 10px;
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-    }
-
-    /* Finestra Neon Gigante di Fine Turno */
-    .neon-summary-box {
-        background: linear-gradient(165deg, #0d0415, #1a0826);
-        border: 3px solid #b026ff;
-        border-radius: 16px;
-        padding: 25px;
-        margin: 20px 0;
-        text-align: center;
-        box-shadow: 0 0 35px rgba(176, 38, 255, 0.4), inset 0 0 20px rgba(176, 38, 255, 0.2);
-    }
-    .neon-summary-title {
-        font-family: 'Orbitron', sans-serif;
-        color: #00f3ff;
-        font-size: 1.5em;
-        font-weight: 900;
-        letter-spacing: 2px;
-        margin-bottom: 15px;
-        text-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
-    }
-    .neon-section-label {
-        font-family: 'Orbitron', sans-serif;
-        color: #f8fafc;
-        font-size: 1.1em;
-        font-weight: 700;
-        margin-top: 15px;
-        margin-bottom: 8px;
-    }
-    .neon-name-item {
-        color: #ef4444;
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.25em;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin: 4px 0;
-        text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
-    }
-
-    /* Card Tavolo Attivo con Bordo Neon Azzurro e Rifinitura Oro */
-    .pro-match-card {
-        background: linear-gradient(160deg, #041014, #020608);
-        border: 2px solid rgba(0, 243, 255, 0.5);
-        border-radius: 12px;
-        padding: 18px;
-        margin-bottom: 15px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 243, 255, 0.15);
-    }
-
-    .pro-match-card-last {
-        background: linear-gradient(160deg, #180808, #070303);
-        border: 2px solid rgba(239, 68, 68, 0.7);
-        border-radius: 12px;
-        padding: 18px;
-        margin-bottom: 15px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(239, 68, 68, 0.2);
-    }
-
-    /* Card Coda */
-    .pro-queue-card {
-        background: linear-gradient(160deg, #051216, #020507);
-        border: 2px solid rgba(0, 243, 255, 0.3);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 15px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
-    }
-
-    .match-header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-        padding-bottom: 8px;
-    }
-
-    .biliardino-title {
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 900;
-        color: #d4af37;
-        font-size: 1em;
-        letter-spacing: 1.5px;
-        text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
-    }
-
-    .turno-badge {
-        background: #02151a;
-        border: 1px solid #00f3ff;
-        color: #00f3ff;
-        padding: 3px 10px;
-        border-radius: 4px;
-        font-family: 'Orbitron', sans-serif;
-        font-size: 0.75em;
-        font-weight: 700;
-        letter-spacing: 1px;
-        box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
-    }
-
-    .match-teams-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #041921;
-        border: 1px solid rgba(0, 243, 255, 0.3);
-        border-radius: 8px;
-        padding: 12px;
-        text-align: center;
-    }
-
-    .team-box {
-        flex: 1;
-        font-family: 'Orbitron', sans-serif;
-        font-size: 0.9em;
-        font-weight: 700;
-        color: #f8fafc;
-        text-transform: uppercase;
-    }
-
-    .vs-badge {
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 900;
-        color: #d4af37;
-        font-size: 1.1em;
-        padding: 0 15px;
-        text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
-    }
-
-    /* Pulsanti Vittoria Neon Azzurro & Dettagli Oro */
-    .stButton > button {
-        width: 100% !important;
-        background: linear-gradient(135deg, #02202b, #043d52) !important;
-        color: #ffffff !important;
-        font-family: 'Orbitron', sans-serif !important;
-        font-weight: 700 !important;
-        border: 1px solid #00f3ff !important;
-        border-radius: 6px !important;
-        padding: 10px 0px !important;
-        font-size: 0.85em !important;
-        letter-spacing: 1px !important;
-        box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
-        margin-top: 10px;
-    }
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #043d52, #00f3ff) !important;
-        color: #02040a !important;
-        border-color: #d4af37 !important;
-        box-shadow: 0 0 25px rgba(0, 243, 255, 0.8), 0 0 10px rgba(212, 175, 55, 0.5);
-    }
-
-    /* Tabelle Classifiche con Bordi Oro */
-    .pro-rank-container {
-        background: #040c12;
-        border: 1px solid rgba(0, 243, 255, 0.2);
-        border-top: 3px solid #d4af37;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(212, 175, 55, 0.1);
-    }
-    .pro-rank-header {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.1em;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 12px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-        color: #d4af37;
-        text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
-    }
-    .pro-player-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #061721;
-        padding: 8px 12px;
-        border-radius: 4px;
-        margin-bottom: 6px;
-        font-size: 0.9em;
-        border: 1px solid rgba(0, 243, 255, 0.15);
-    }
-    .pro-player-row-eliminated {
-        background: #03050a;
-        opacity: 0.5;
-        border: 1px solid #0f1523;
-    }
-    .pro-rank-name {
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #d4af37;
-    }
-    .pro-rank-name-eliminated {
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #ef4444;
-        text-decoration: line-through;
-    }
-
-    div.block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 3rem;
-    }
-    </style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Orbitron:wght@700;900&display=swap');
+.stApp { background: #020a1a; background-image: radial-gradient(ellipse at top, rgba(0,82,180,0.45) 0%, transparent 60%), radial-gradient(ellipse at bottom, rgba(255,215,0,0.1) 0%, transparent 60%); }
+.hero-champions { text-align: center; padding: 22px 10px; background: linear-gradient(180deg, #0a1931 0%, #020a1a 100%); border: 2px solid #c9a86a; border-radius: 18px; margin-bottom: 18px; box-shadow: 0 0 35px rgba(201,168,106,0.25); }
+.hero-title { font-family: 'Orbitron'; font-size: 2.1em; font-weight: 900; background: linear-gradient(135deg, #fff 10%, #c9a86a 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 3px; text-transform: uppercase; }
+.hero-sub { color: #6ea8ff; font-family: 'Montserrat'; letter-spacing: 4px; font-size: 0.85em; font-weight: 700; }
+.omini-row { font-size: 26px; letter-spacing: 10px; }
+.champions-card { background: linear-gradient(160deg, #0a1931 0%, #061024 100%); border: 1px solid rgba(201,168,106,0.35); border-left: 4px solid #0052b4; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 5px 18px rgba(0,0,0,0.5); }
+.champions-card-live { border: 2px solid #c9a86a; box-shadow: 0 0 22px rgba(201,168,106,0.35), 0 0 12px rgba(0,82,180,0.4); background: linear-gradient(160deg, #12326b 0%, #0a1931 100%); }
+.biliardino-badge { background: #020a1a; border: 1px solid #c9a86a; color: #c9a86a; padding: 2px 9px; border-radius: 20px; font-family: 'Orbitron'; font-size: 0.68em; font-weight: 800; }
+.vs-badge { background: #0052b4; color: #fff; font-weight: 900; font-family: 'Orbitron'; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.vs-badge-live { background: #c9a86a; color: #020a1a; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+.team-name { font-family: 'Montserrat'; font-weight: 800; text-transform: uppercase; color: #eaf2ff; font-size: 0.92em; }
+.classifica-row { display: flex; justify-content: space-between; align-items: center; background: rgba(2,10,26,0.9); padding: 7px 11px; border-radius: 6px; margin-bottom: 4px; border-left: 3px solid transparent; }
+.classifica-row.top8 { border-left-color: #00d1ff; background: rgba(0,82,180,0.28); }
+.classifica-row.playoff { border-left-color: #c9a86a; }
+.classifica-row.europa { border-left-color: #ff6b35; opacity: 0.8; }
+.ko-stage-title { font-family: 'Orbitron'; color: #c9a86a; font-size: 1.15em; font-weight: 900; letter-spacing: 2px; margin: 18px 0 8px 0; border-bottom: 1px solid rgba(201,168,106,0.3); padding-bottom: 6px; }
+.ko-match { background: linear-gradient(135deg, #0a1931, #07152f); border: 1px solid #1e3a6b; border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+.ko-match-winner { border-color: #c9a86a; background: linear-gradient(135deg, #1e3a5f, #0a1931); }
+.live-dot { width: 8px; height: 8px; background: #ff3b3b; border-radius: 50%; display: inline-block; margin-right: 6px; box-shadow: 0 0 8px #ff3b3b; animation: blink 1s infinite; }
+@keyframes blink { 0%{opacity:1} 50%{opacity:0.2} 100%{opacity:1} }
+</style>
 """, unsafe_allow_html=True)
 
-STATE_FILE = "torneo_state.json"
+STATE_FILE = "torneo_champions_state.json"
 
-def salva_stato():
-    data = {
-        "players": st.session_state.players,
-        "tournament_started": st.session_state.tournament_started,
-        "initial_lives": st.session_state.initial_lives,
-        "num_biliardini": st.session_state.num_biliardini,
-        "current_round_matches": st.session_state.current_round_matches,
-        "round_number": st.session_state.round_number,
-        "history": st.session_state.history,
-        "match_history": st.session_state.match_history
-    }
+def salva():
+    data = {k: st.session_state[k] for k in ["teams","config","league_matches","ko_champions","ko_europa","phase"]}
     with open(STATE_FILE, "w") as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=2)
 
-def carica_stato():
-    if os.path.exists(STATE_FILE):
-        try:
-            with open(STATE_FILE, "r") as f:
-                data = json.load(f)
-                st.session_state.players = data.get("players", [])
-                st.session_state.tournament_started = data.get("tournament_started", False)
-                st.session_state.initial_lives = data.get("initial_lives", 5)
-                st.session_state.num_biliardini = data.get("num_biliardini", 4)
-                st.session_state.current_round_matches = data.get("current_round_matches", [])
-                st.session_state.round_number = data.get("round_number", 0)
-                st.session_state.history = data.get("history", [])
-                st.session_state.match_history = data.get("match_history", [])
-                return True
-        except:
-            return False
-    return False
+def carica():
+    if not os.path.exists(STATE_FILE): return False
+    try:
+        with open(STATE_FILE, "r") as f:
+            d=json.load(f)
+        for k in d: st.session_state[k]=d[k]
+        return True
+    except: return False
 
+def punti(gf,gs):
+    diff=gf-gs
+    if diff>=2: return 3,0
+    if diff==1: return 2,1
+    if diff==-1: return 1,2
+    return 0,3
+
+def genera_league(teams, n_per_team):
+    poss=[]
+    for i in range(len(teams)):
+        for j in range(i+1,len(teams)): poss.append((teams[i]["id"],teams[j]["id"]))
+    random.shuffle(poss)
+    cnt={t["id"]:0 for t in teams}
+    cal=[]
+    for a,b in poss:
+        if cnt[a]<n_per_team and cnt[b]<n_per_team:
+            cal.append({"id":len(cal)+1,"teamA_id":a,"teamB_id":b,"golA":None,"golB":None,"giocata":False,"biliardino":None})
+            cnt[a]+=1; cnt[b]+=1
+    for tid in list(cnt.keys()):
+        while cnt[tid]<n_per_team:
+            cand=[t for t in teams if t["id"]!=tid]
+            av=random.choice(cand)
+            cal.append({"id":len(cal)+1,"teamA_id":tid,"teamB_id":av["id"],"golA":None,"golB":None,"giocata":False,"biliardino":None})
+            cnt[tid]+=1; cnt[av["id"]]+=1
+    random.shuffle(cal)
+    return cal
+
+def get_team(tid):
+    for t in st.session_state.teams:
+        if t["id"]==tid: return t
+    return None
+
+def classifica_calc():
+    for t in st.session_state.teams:
+        t["punti"]=0; t["gf"]=0; t["gs"]=0; t["giocate"]=0; t["diff"]=0
+    for m in st.session_state.league_matches:
+        if not m["giocata"]: continue
+        ta=get_team(m["teamA_id"]); tb=get_team(m["teamB_id"])
+        if not ta or not tb: continue
+        pA,pB=punti(m["golA"],m["golB"])
+        ta["punti"]+=pA; tb["punti"]+=pB
+        ta["gf"]+=m["golA"]; ta["gs"]+=m["golB"]; tb["gf"]+=m["golB"]; tb["gs"]+=m["golA"]
+        ta["giocate"]+=1; tb["giocate"]+=1
+    for t in st.session_state.teams: t["diff"]=t["gf"]-t["gs"]
+    return sorted(st.session_state.teams, key=lambda x:(x["punti"],x["diff"],x["gf"]), reverse=True)
+
+def crea_ko_iniziale(teams_qual):
+    """teams_qual già ordinate"""
+    if len(teams_qual)<=8:
+        return {"top8":teams_qual,"playoff":[],"ottavi":[],"quarti":[],"semi":[],"finale":None,"vincitore":None,"fase_attuale":"OTTAVI"}
+    top8=teams_qual[:8]
+    playoff_teams=teams_qual[8:]
+    playoff=[]
+    l=len(playoff_teams)
+    for i in range(l//2):
+        playoff.append({"id":f"PL{i+1}","teamA":playoff_teams[i],"teamB":playoff_teams[l-1-i],"golA":None,"golB":None,"giocata":False,"vincitore":None,"biliardino":None})
+    return {"top8":top8,"playoff":playoff,"ottavi":[],"quarti":[],"semi":[],"finale":None,"vincitore":None,"fase_attuale":"PLAYOFF"}
+
+def avanza_ko(ko):
+    # Se playoff finiti -> crea ottavi
+    if ko["fase_attuale"]=="PLAYOFF" and ko["playoff"]:
+        if all(m["giocata"] for m in ko["playoff"]):
+            vincitori=[m["vincitore"] for m in ko["playoff"]]
+            # accoppia top8 vs vincitori: 1° vs peggior vincitore, ecc. Semplice: shuffle
+            # Ordina top8 per classifica, vincitori per punti originali
+            ottavi=[]
+            # Top8 già in ordine, vincitori in ordine di arrivo
+            pool = ko["top8"] + vincitori
+            random.shuffle(pool)
+            for i in range(0,len(pool)-1,2):
+                ottavi.append({"id":f"OT{i//2+1}","teamA":pool[i],"teamB":pool[i+1],"golA":None,"golB":None,"giocata":False,"vincitore":None,"biliardino":None})
+            ko["ottavi"]=ottavi
+            ko["fase_attuale"]="OTTAVI"
+            return ko
+
+    # Se ottavi finiti -> quarti
+    if ko["fase_attuale"]=="OTTAVI" and ko["ottavi"]:
+        if all(m["giocata"] for m in ko["ottavi"]):
+            vinc=[m["vincitore"] for m in ko["ottavi"]]
+            quarti=[]
+            for i in range(0,len(vinc)-1,2):
+                quarti.append({"id":f"QU{i//2+1}","teamA":vinc[i],"teamB":vinc[i+1],"golA":None,"golB":None,"giocata":False,"vincitore":None,"biliardino":None})
+            ko["quarti"]=quarti
+            ko["fase_attuale"]="QUARTI"
+            return ko
+
+    if ko["fase_attuale"]=="QUARTI" and ko["quarti"]:
+        if all(m["giocata"] for m in ko["quarti"]):
+            vinc=[m["vincitore"] for m in ko["quarti"]]
+            semi=[]
+            for i in range(0,len(vinc)-1,2):
+                semi.append({"id":f"SE{i//2+1}","teamA":vinc[i],"teamB":vinc[i+1],"golA":None,"golB":None,"giocata":False,"vincitore":None,"biliardino":None})
+            ko["semi"]=semi
+            ko["fase_attuale"]="SEMI"
+            return ko
+
+    if ko["fase_attuale"]=="SEMI" and ko["semi"]:
+        if all(m["giocata"] for m in ko["semi"]):
+            vinc=[m["vincitore"] for m in ko["semi"]]
+            if len(vinc)>=2:
+                ko["finale"]={"id":"FIN","teamA":vinc[0],"teamB":vinc[1],"golA":None,"golB":None,"giocata":False,"vincitore":None,"biliardino":None}
+                ko["fase_attuale"]="FINALE"
+            return ko
+
+    if ko["fase_attuale"]=="FINALE" and ko["finale"]:
+        if ko["finale"]["giocata"]:
+            ko["vincitore"]=ko["finale"]["vincitore"]
+            ko["fase_attuale"]="FINITO"
+            return ko
+    return ko
+
+def assegna_biliardini_ko(ko, num_biliardini, partite_gia_in_corso_count):
+    # Ritorna lista partite live per questo tabellone
+    fase = ko["fase_attuale"]
+    lista=[]
+    if fase=="PLAYOFF": lista=ko["playoff"]
+    elif fase=="OTTAVI": lista=ko["ottavi"]
+    elif fase=="QUARTI": lista=ko["quarti"]
+    elif fase=="SEMI": lista=ko["semi"]
+    elif fase=="FINALE": lista=[ko["finale"]] if ko["finale"] else []
+    else: lista=[]
+    # solo non giocate
+    non_giocate=[m for m in lista if not m["giocata"]]
+    return non_giocate
+
+# INIT
 if "initialized" not in st.session_state:
-    st.session_state.initialized = True
-    st.session_state.history = []
-    st.session_state.match_history = []
-    if not carica_stato():
-        st.session_state.players = []
-        st.session_state.tournament_started = False
-        st.session_state.initial_lives = 5
-        st.session_state.num_biliardini = 4
-        st.session_state.current_round_matches = []
-        st.session_state.round_number = 0
+    st.session_state.initialized=True
+    st.session_state.teams=[]
+    st.session_state.config={"num_biliardini":4,"partite_per_coppia":6,"num_fascia_A":16,"nome_torneo":"CHAMPIONS BILIARDINO LIVE"}
+    st.session_state.league_matches=[]
+    st.session_state.ko_champions=None
+    st.session_state.ko_europa=None
+    st.session_state.phase="setup"
+    carica()
 
-query_params = st.query_params
-if "giocatore_selezionato" not in st.session_state:
-    url_user = query_params.get("user", None)
-    st.session_state.giocatore_selezionato = url_user if url_user else None
-
-if "vista_personale_attiva" not in st.session_state:
-    st.session_state.vista_personale_attiva = False
-
-def salva_snapshot():
-    snapshot = {
-        "players": json.loads(json.dumps(st.session_state.players)),
-        "current_round_matches": json.loads(json.dumps(st.session_state.current_round_matches)),
-        "round_number": st.session_state.round_number,
-        "match_history": json.loads(json.dumps(st.session_state.match_history))
-    }
-    st.session_state.history.append(snapshot)
-
-def genera_abbinamenti():
-    attivi = [p for p in st.session_state.players if not p["eliminated"]]
-    
-    if st.session_state.round_number == 1:
-        atts = [p for p in attivi if p["role"] == "attaccante"]
-        ports = [p for p in attivi if p["role"] == "portiere"]
-        random.shuffle(atts)
-        random.shuffle(ports)
-        
-        min_len = min(len(atts), len(ports))
-        coppie = []
-        for i in range(min_len):
-            coppie.append({"att": atts[i], "port": ports[i]})
-        avanzi = atts[min_len:] + ports[min_len:]
-        random.shuffle(coppie)
-    else:
-        atts_w = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") == 'W']
-        atts_l = [p for p in attivi if p["role"] == "attaccante" and p.get("last_result") != 'W']
-        ports_w = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") == 'W']
-        ports_l = [p for p in attivi if p["role"] == "portiere" and p.get("last_result") != 'W']
-        
-        random.shuffle(atts_w)
-        random.shuffle(atts_l)
-        random.shuffle(ports_w)
-        random.shuffle(ports_l)
-        
-        coppie = []
-        while atts_w and ports_l:
-            coppie.append({"att": atts_w.pop(0), "port": ports_l.pop(0)})
-        while atts_l and ports_w:
-            coppie.append({"att": atts_l.pop(0), "port": ports_w.pop(0)})
-        while atts_w and ports_w:
-            coppie.append({"att": atts_w.pop(0), "port": ports_w.pop(0)})
-        while atts_l and ports_l:
-            coppie.append({"att": atts_l.pop(0), "port": ports_l.pop(0)})
-            
-        avanzi = atts_w + atts_l + ports_w + ports_l
-        random.shuffle(coppie)
-
-    partite = []
-    i = 0
-    while i < len(coppie) - 1:
-        partite.append({
-            "teamA": (coppie[i]["att"], coppie[i]["port"]),
-            "teamB": (coppie[i+1]["att"], coppie[i+1]["port"])
-        })
-        i += 2
-        
-    return {"partite": partite, "pass": avanzi}
-
-def genera_pdf_report():
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
-    elements = []
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor("#00f3ff"), alignment=1, spaceAfter=15)
-    subtitle_style = ParagraphStyle('SubTitleStyle', parent=styles['Heading2'], fontSize=12, textColor=colors.HexColor("#d4af37"), spaceBefore=12, spaceAfter=6)
-    
-    elements.append(Paragraph("TORNEO BARAONDA A VITE // BY BATTANI - REPORT UFFICIALE", title_style))
-    elements.append(Spacer(1, 15))
-    
-    if st.session_state.match_history:
-        for item in st.session_state.match_history:
-            elements.append(Paragraph(f"Turno N° {item['turno']}", subtitle_style))
-            table_data = [["Biliardino", "Squadra A", "Squadra B", "Esito"]]
-            for idx, m in enumerate(item["partite"]):
-                tA = f"🥅 {m['tA_port']} / ⚽️ {m['tA_att']}"
-                tB = f"🥅 {m['tB_port']} / ⚽️ {m['tB_att']}"
-                table_data.append([str(idx+1), tA, tB, m.get('vincitore', 'Completata')])
-            t = Table(table_data, colWidths=[65, 200, 200, 85])
-            t.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#040c12")),
-                ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor("#00f3ff")),
-                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#00f3ff")),
-                ('FONTSIZE', (0,0), (-1,-1), 8.5),
-            ]))
-            elements.append(t)
-            elements.append(Spacer(1, 10))
-    doc.build(elements)
-    buffer.seek(0)
-    return buffer.getvalue()
-
-st.sidebar.title("🔐 SECURITY & ADMIN")
-admin_code = st.sidebar.text_input("Codice Amministratore", type="password", placeholder="Inserisci 0000")
-is_admin = (admin_code == "0000")
-
+# ADMIN
+st.sidebar.title("🔐 ACCESSO")
+admin_code=st.sidebar.text_input("Codice Admin", type="password", placeholder="0000")
+is_admin=admin_code=="0000"
 if is_admin:
-    st.sidebar.markdown("---")
-    if st.sidebar.button("🚀 ACCEDI COME ADMIN", type="primary", use_container_width=True):
-        st.session_state.giocatore_selezionato = "ADMIN"
-        st.query_params["user"] = "ADMIN"
+    st.sidebar.success("ADMIN 0000 ATTIVO")
+    if st.sidebar.button("Accedi ADMIN"):
+        st.session_state.giocatore="ADMIN"
+        st.query_params["user"]="ADMIN"
         st.rerun()
 
-nomi_giocatori = sorted(list(set([p["name"] for p in st.session_state.players]))) if st.session_state.players else []
+if "giocatore" not in st.session_state:
+    st.session_state.giocatore=st.query_params.get("user",None)
 
-# TITOLO CENTRALE CON NEON VERDE E ORO
-st.markdown("""
-    <div class="hero-title-container">
-        <div class="hero-main-title">Torneo Baraonda a Vite</div>
-        <div class="hero-subtitle">Con Ruolo Live // By Battani</div>
-    </div>
+st.markdown(f"""
+<div class="hero-champions">
+    <div class="omini-row">🧍‍♂️ 🧍‍♂️ 🧍‍♂️ ⚽ 🧍‍♂️ 🧍‍♂️ 🧍‍♂️</div>
+    <div class="hero-title">{st.session_state.config['nome_torneo']}</div>
+    <div class="hero-sub">★ CHAMPIONS LEAGUE LIVE • FOOSBALL EDITION • BY BATTANI ★</div>
+    <div class="omini-row">🧍‍♂️ 🧍‍♂️ 🧍‍♂️ ⚽ 🧍‍♂️ 🧍‍♂️ 🧍‍♂️</div>
+</div>
 """, unsafe_allow_html=True)
 
-if st.session_state.giocatore_selezionato is None:
-    if nomi_giocatori:
-        with st.container(border=True):
-            st.markdown("### 👤 SELEZIONA UTENTE:")
-            nome_scelto_temp = st.selectbox("Iscritti:", nomi_giocatori, label_visibility="collapsed")
-            if st.button("ACCEDI ALLA COMPETIZIONE", type="primary", use_container_width=True):
-                st.session_state.giocatore_selezionato = nome_scelto_temp
-                st.query_params["user"] = nome_scelto_temp
-                st.rerun()
+if not st.session_state.giocatore:
+    st.markdown("### 👤 SELEZIONA LA TUA COPPIA")
+    if st.session_state.teams:
+        nomi=[t["nome"] for t in st.session_state.teams]
+        scelta=st.selectbox("Coppie:", nomi)
+        if st.button("ENTRA NEL TORNEO LIVE", type="primary", use_container_width=True):
+            st.session_state.giocatore=scelta
+            st.query_params["user"]=scelta
+            st.rerun()
     else:
-        st.warning("⚠️ Nessun partecipante caricato. Inserisci i dati dal pannello Admin nella barra laterale.")
-        
+        st.info("Nessuna coppia registrata - chiedi all'admin di creare il torneo")
     if is_admin:
-        with st.expander("⚙️ Pannello Configurazione & Gestione (Admin)", expanded=True):
-            st.session_state.initial_lives = st.number_input("Vite iniziali", 1, 10, st.session_state.initial_lives)
-            st.session_state.num_biliardini = st.number_input("Numero Biliardini", 1, 10, st.session_state.num_biliardini)
-            lista_input_testo = st.text_area("Incolla partecipanti (es: 1 ⚽️ Nome, 2 🥅 Nome):", height=80)
-            if st.button("📥 Importa e Registra Giocatori", type="primary"):
-                for riga in lista_input_testo.split("\n"):
-                    riga_pulita = riga.strip()
-                    if not riga_pulita: continue
-                    role = "portiere" if "🥅" in riga_pulita else ("attaccante" if "⚽" in riga_pulita else None)
-                    if role:
-                        nome = re.sub(r'^\d+[\.\-\s]*', '', riga_pulita.replace("🥅", "").replace("⚽️", "").replace("⚽", "")).strip()
-                        if nome and not any(p["name"].lower() == nome.lower() and p["role"] == role for p in st.session_state.players):
-                            st.session_state.players.append({"id": len(st.session_state.players)+1, "name": nome, "role": role, "lives": st.session_state.initial_lives, "max_lives": st.session_state.initial_lives, "eliminated": False, "last_result": None})
-                salva_stato()
-                st.rerun()
-            if len(st.session_state.players) >= 2 and not st.session_state.tournament_started:
-                if st.button("🚀 Avvia Torneo", type="primary"):
-                    st.session_state.tournament_started = True
-                    st.session_state.round_number = 1
-                    st.session_state.current_round_matches = genera_abbinamenti()
-                    salva_stato()
+        with st.expander("⚙️ SETUP TORNEO CHAMPIONS LIVE - ADMIN", expanded=True):
+            c1,c2,c3=st.columns(3)
+            num_bil=c1.number_input("N° Biliardini",1,10,st.session_state.config["num_biliardini"])
+            partite_pc=c2.selectbox("Partite per coppia",[6,7,8], index=[6,7,8].index(st.session_state.config["partite_per_coppia"]))
+            num_A=c3.number_input("Coppie in Fascia A",8,32,st.session_state.config["num_fascia_A"])
+            nome_torneo=st.text_input("Nome Torneo", st.session_state.config["nome_torneo"])
+            lista=st.text_area("Lista coppie (una per riga: Rossi / Bianchi)", height=220, placeholder="Battani / Fiore\nRossi / Verdi\nSpaccaTutto Team")
+            if st.button("💾 CREA CALENDARIO CHAMPIONS LIVE", type="primary", use_container_width=True):
+                teams=[]
+                for idx,riga in enumerate(lista.split("\n")):
+                    riga=riga.strip()
+                    if not riga: continue
+                    nome=re.sub(r'^\d+[\.\-\)\s]*','',riga).strip()
+                    teams.append({"id":idx+1,"nome":nome,"punti":0,"gf":0,"gs":0,"diff":0,"giocate":0})
+                if len(teams)<4:
+                    st.error("Minimo 4 coppie")
+                else:
+                    st.session_state.config={"num_biliardini":num_bil,"partite_per_coppia":partite_pc,"num_fascia_A":num_A,"nome_torneo":nome_torneo}
+                    st.session_state.teams=teams
+                    st.session_state.league_matches=genera_league(teams, partite_pc)
+                    st.session_state.phase="league"
+                    st.session_state.ko_champions=None
+                    st.session_state.ko_europa=None
+                    salva()
+                    st.success(f"Torneo LIVE creato! {len(teams)} coppie, {len(st.session_state.league_matches)} partite")
                     st.rerun()
-            
-            st.markdown("---")
-            if st.button("🔄 Reset Totale Torneo (Ricomincia da capo)", type="secondary"):
-                st.session_state.tournament_started = False
-                st.session_state.current_round_matches = []
-                st.session_state.round_number = 0
-                st.session_state.players = []
-                st.session_state.history = []
-                st.session_state.match_history = []
-                st.session_state.giocatore_selezionato = None
-                if "user" in st.query_params:
-                    del st.query_params["user"]
-                if os.path.exists(STATE_FILE): 
-                    os.remove(STATE_FILE)
-                st.rerun()
     st.stop()
 
-col_u1, col_u2 = st.columns([3, 1])
-with col_u1:
-    st.info(f"⚡ Operatore Connesso: **{st.session_state.giocatore_selezionato.upper()}**")
-with col_u2:
-    if st.button("🔄 Logout", use_container_width=True):
-        st.session_state.giocatore_selezionato = None
-        st.session_state.vista_personale_attiva = False
-        if "user" in st.query_params:
-            del st.query_params["user"]
+# LOGGATO
+c1,c2=st.columns([3,1])
+with c1: st.info(f"🎮 Coppia: **{st.session_state.giocatore}** | Fase: **{st.session_state.phase.upper()}** | Biliardini: {st.session_state.config['num_biliardini']}")
+with c2:
+    if st.button("Logout"):
+        st.session_state.giocatore=None
+        st.query_params.clear()
         st.rerun()
 
-etichetta_occhio = "👁️ Mostra Tutti i Match" if st.session_state.vista_personale_attiva else f"🔥 Le Partite di {st.session_state.giocatore_selezionato}"
-if st.button(etichetta_occhio, use_container_width=True):
-    st.session_state.vista_personale_attiva = not st.session_state.vista_personale_attiva
+if is_admin and st.sidebar.button("🔄 RESET TOTALE"):
+    if os.path.exists(STATE_FILE): os.remove(STATE_FILE)
+    for k in list(st.session_state.keys()): del st.session_state[k]
     st.rerun()
 
-if is_admin:
-    with st.expander("⚙️ Pannello Configurazione & Gestione"):
-        if st.button("🔄 Reset Totale Torneo (Ricomincia da capo)", type="secondary"):
-            st.session_state.tournament_started = False
-            st.session_state.current_round_matches = []
-            st.session_state.round_number = 0
-            st.session_state.players = []
-            st.session_state.history = []
-            st.session_state.match_history = []
-            st.session_state.giocatore_selezionato = None
-            if "user" in st.query_params:
-                del st.query_params["user"]
-            if os.path.exists(STATE_FILE): 
-                os.remove(STATE_FILE)
-            st.rerun()
-
-if st.session_state.tournament_started:
-    pdf_data = genera_pdf_report()
-    st.sidebar.markdown("---")
-    st.sidebar.download_button("📥 Download Report PDF", pdf_data, "report_torneo_baraonda.pdf", "application/pdf", use_container_width=True)
-
-st.markdown("---")
-
-if st.session_state.tournament_started:
-    data_turno = st.session_state.current_round_matches
-    
-    if data_turno and not data_turno.get("partite"):
-        if "turno_report_log" in st.session_state and st.session_state.turno_report_log.get("vite_perse"):
-            log_data = st.session_state.turno_report_log
-            
-            vite_list_html = ""
-            if log_data["vite_perse"]:
-                unici_vite = sorted(list(set(log_data["vite_perse"])))
-                for nome in unici_vite:
-                    vite_list_html += f'<div class="neon-name-item">{nome.upper()}</div>'
-            else:
-                vite_list_html = '<div class="neon-name-item" style="color: #00f3ff;">NESSUNO</div>'
-
-            elim_list_html = ""
-            if log_data["eliminati"]:
-                unici_elim = sorted(list(set(log_data["eliminati"])))
-                for nome in unici_elim:
-                    elim_list_html += f'<div class="neon-name-item">{nome.upper()}</div>'
-            else:
-                elim_list_html = '<div class="neon-name-item" style="color: #00f3ff;">NESSUN ELIMINATO</div>'
-
-            st.markdown(f"""
-                <div class="neon-summary-box">
-                    <div class="neon-summary-title">⚡ REPORT FINALE TURNO N° {st.session_state.round_number} ⚡</div>
-                    <div class="neon-section-label">📉 GIOCATORI CHE HANNO PERSO UNA VITA:</div>
-                    {vite_list_html}
-                    <br>
-                    <div class="neon-section-label">💀 GIOCATORI ELIMINATI DAL TORNEO:</div>
-                    {elim_list_html}
-                </div>
-            """, unsafe_allow_html=True)
-            
-            time.sleep(5)
-            st.session_state.turno_report_log = {"turno": -1, "vite_perse": [], "eliminati": []}
-
-        st.session_state.round_number += 1
-        st.session_state.current_round_matches = genera_abbinamenti()
-        salva_stato()
-        st.rerun()
-
-    st.markdown(f"""<div class="pro-turn-banner">⚔️ TURNO DI GARA N° {st.session_state.round_number}</div>""", unsafe_allow_html=True)
-
-    partite = data_turno.get("partite", []) if data_turno else []
-    if partite:
-        num_biliardini = st.session_state.num_biliardini
-        partite_in_corso = partite[:num_biliardini]
-        partite_in_coda = partite[num_biliardini:]
-        
-        is_personale = st.session_state.vista_personale_attiva
-        target_user = st.session_state.giocatore_selezionato.lower()
-
-        if is_personale:
-            st.markdown(f"### 🔥 LE PARTITE DI {st.session_state.giocatore_selezionato.upper()}:")
+# ========== FUNZIONE GENERICA PER SEGNALARE RISULTATO KO ==========
+def ui_segna_ko(match, prefix):
+    ta=match["teamA"]; tb=match["teamB"]
+    st.markdown(f"""
+    <div class="champions-card champions-card-live">
+        <div style="display:flex; justify-content:space-between;"><span class="biliardino-badge">🏟️ {match.get('biliardino','?')} • {match.get('id','')} • LIVE</span><span class="live-dot"></span><span class="biliardino-badge">{prefix}</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; text-align:center;">
+            <div style="flex:1;"><div class="team-name">{ta['nome']}</div></div><div class="vs-badge vs-badge-live">VS</div><div style="flex:1;"><div class="team-name">{tb['nome']}</div></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    keyA=f"golA_{prefix}_{match['id']}"
+    keyB=f"golB_{prefix}_{match['id']}"
+    if keyA not in st.session_state: st.session_state[keyA]=0
+    if keyB not in st.session_state: st.session_state[keyB]=0
+    ca,_,cb=st.columns([4,1,4])
+    with ca:
+        st.write(f"**{ta['nome']}**")
+        cols=st.columns(8)
+        for i in range(8):
+            if cols[i].button(str(i), key=f"{prefix}_ga_{match['id']}_{i}", use_container_width=True): st.session_state[keyA]=i
+        st.metric("Gol", st.session_state[keyA])
+    with cb:
+        st.write(f"**{tb['nome']}**")
+        cols=st.columns(8)
+        for i in range(8):
+            if cols[i].button(str(i), key=f"{prefix}_gb_{match['id']}_{i}", use_container_width=True): st.session_state[keyB]=i
+        st.metric("Gol", st.session_state[keyB])
+    if st.button(f"✅ CONFERMA {prefix} - {ta['nome']} {st.session_state[keyA]}-{st.session_state[keyB]} {tb['nome']}", key=f"conf_{prefix}_{match['id']}", type="primary", use_container_width=True):
+        if st.session_state[keyA]==st.session_state[keyB]:
+            st.error("Pareggio non ammesso in eliminazione diretta! Segnate fino a 7, deve esserci un vincitore")
         else:
-            st.markdown("### 🔥 PARTITE IN CORSO (Sui biliardini):")
+            match["golA"]=st.session_state[keyA]; match["golB"]=st.session_state[keyB]; match["giocata"]=True
+            match["vincitore"]=ta if st.session_state[keyA]>st.session_state[keyB] else tb
+            st.session_state[keyA]=0; st.session_state[keyB]=0
+            salva(); st.success(f"Vince {match['vincitore']['nome']}!"); st.rerun()
+    if is_admin and st.button(f"❌ Annulla {match['id']}", key=f"ann_{prefix}_{match['id']}"):
+        match["giocata"]=False; match["golA"]=None; match["golB"]=None; match["vincitore"]=None; salva(); st.rerun()
 
-        total_partite_corso = len(partite_in_corso)
+# ===================== FASE LEAGUE LIVE =====================
+if st.session_state.phase=="league":
+    classif=classifica_calc()
+    non_giocate=[m for m in st.session_state.league_matches if not m["giocata"]]
+    for i,m in enumerate(non_giocate[:st.session_state.config["num_biliardini"]]): m["biliardino"]=i+1
+    for m in non_giocate[st.session_state.config["num_biliardini"]:]: m["biliardino"]=None
 
-        for idx, match in enumerate(partite_in_corso):
-            tA_att, tA_port = match["teamA"]
-            tB_att, tB_port = match["teamB"]
-            nomi_match = [tA_att['name'].lower(), tA_port['name'].lower(), tB_att['name'].lower(), tB_port['name'].lower()]
-            
-            if is_personale and target_user != "admin" and target_user not in nomi_match:
-                continue
+    mio_team=next((t for t in st.session_state.teams if t["nome"]==st.session_state.giocatore), None)
+    mie = non_giocate if st.session_state.giocatore=="ADMIN" else [m for m in non_giocate if mio_team and (m["teamA_id"]==mio_team["id"] or m["teamB_id"]==mio_team["id"])]
 
-            biliardino_num = idx + 1
-            is_ultima = (idx == total_partite_corso - 1) and (len(partite_in_coda) == 0)
+    if mie:
+        st.markdown("### ⭐ LA TUA PARTITA LIVE - SEGNALAZIONE")
+        m=mie[0]
+        ta=get_team(m["teamA_id"]); tb=get_team(m["teamB_id"])
+        st.markdown(f"""
+        <div class="champions-card champions-card-live">
+            <div style="display:flex; justify-content:space-between;"><span class="biliardino-badge">🏟️ BILIARDINO {m['biliardino'] if m['biliardino'] else 'IN CODA'} • LIVE</span><span class="live-dot"></span><span class="biliardino-badge">ID {m['id']} • LEAGUE</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; text-align:center;">
+                <div style="flex:1;"><div class="team-name">{ta['nome']}</div></div><div class="vs-badge vs-badge-live">VS</div><div style="flex:1;"><div class="team-name">{tb['nome']}</div></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if "golA_temp" not in st.session_state: st.session_state.golA_temp=0
+        if "golB_temp" not in st.session_state: st.session_state.golB_temp=0
+        ca,_,cb=st.columns([4,1,4])
+        with ca:
+            st.write(f"**{ta['nome']}**")
+            cols=st.columns(8)
+            for i in range(8):
+                if cols[i].button(str(i), key=f"ga_{m['id']}_{i}", use_container_width=True): st.session_state.golA_temp=i
+            st.metric("Gol", st.session_state.golA_temp)
+        with cb:
+            st.write(f"**{tb['nome']}**")
+            cols=st.columns(8)
+            for i in range(8):
+                if cols[i].button(str(i), key=f"gb_{m['id']}_{i}", use_container_width=True): st.session_state.golB_temp=i
+            st.metric("Gol", st.session_state.golB_temp)
+        pA,pB=punti(st.session_state.golA_temp, st.session_state.golB_temp)
+        st.info(f"Anteprima: {ta['nome']} {pA}pt - {tb['nome']} {pB}pt | Diff {st.session_state.golA_temp-st.session_state.golB_temp:+d}")
+        if st.button("✅ CONFERMA RISULTATO LEAGUE", type="primary", use_container_width=True):
+            m["golA"]=st.session_state.golA_temp; m["golB"]=st.session_state.golB_temp; m["giocata"]=True
+            st.session_state.golA_temp=0; st.session_state.golB_temp=0; salva(); st.rerun()
+        if is_admin and st.button("❌ Annulla (admin)"):
+            m["giocata"]=False; m["golA"]=None; m["golB"]=None; salva(); st.rerun()
 
-            if is_ultima and not is_personale:
-                st.markdown(f"""<div class="pro-last-match-banner">⚠️ ULTIMA PARTITA TURNO N° {st.session_state.round_number}</div>""", unsafe_allow_html=True)
-                st.markdown(f"""
-                    <div class="pro-match-card-last">
-                        <div class="match-header-row">
-                            <span class="biliardino-title" style="color: #ef4444; text-shadow: none;">🏟️ BILIARDINO {biliardino_num} (ULTIMO MATCH)</span>
-                            <span class="turno-badge" style="border-color: #ef4444; color: #ef4444; box-shadow: none;">TURNO {st.session_state.round_number}</span>
-                        </div>
-                        <div class="match-teams-row" style="background: #180505; border-color: #7f1d1d;">
-                            <div class="team-box">🥅 {tA_port['name'].upper()} / ⚽️ {tA_att['name'].upper()}</div>
-                            <div class="vs-badge" style="color: #ef4444; text-shadow: none;">VS</div>
-                            <div class="team-box">🥅 {tB_port['name'].upper()} / ⚽️ {tB_att['name'].upper()}</div>
+    st.divider()
+    col_campo,col_class=st.columns([2,1])
+    with col_campo:
+        st.markdown(f"### 🏟️ LIVE - IN CORSO ({len(non_giocate[:st.session_state.config['num_biliardini']])}/{st.session_state.config['num_biliardini']} biliardini occupati)")
+        for m in non_giocate[:st.session_state.config["num_biliardini"]]:
+            ta=get_team(m["teamA_id"]); tb=get_team(m["teamB_id"])
+            evidenzia=mio_team and (m["teamA_id"]==mio_team["id"] or m["teamB_id"]==mio_team["id"])
+            st.markdown(f"""<div class="champions-card {'champions-card-live' if evidenzia else ''}"><div style="display:flex; justify-content:space-between;"><span class="biliardino-badge">TAVOLO {m['biliardino']}</span><span class="live-dot"></span><span style="font-size:0.7em; color:#6ea8ff;">ID {m['id']}</span></div><div style="display:flex; justify-content:space-between; margin-top:8px;"><span class="team-name">{ta['nome']}</span><span class="vs-badge">VS</span><span class="team-name">{tb['nome']}</span></div></div>""", unsafe_allow_html=True)
+        st.markdown(f"### ⏳ CODA ({len(non_giocate[st.session_state.config['num_biliardini']:])} partite)")
+        for m in non_giocate[st.session_state.config["num_biliardini"]:][:10]:
+            ta=get_team(m["teamA_id"]); tb=get_team(m["teamB_id"])
+            st.markdown(f"""<div class="champions-card" style="opacity:0.7; padding:9px;"><div style="display:flex; justify-content:space-between; font-size:0.84em;"><span>{ta['nome']}</span><span style="color:#c9a86a;">VS</span><span>{tb['nome']}</span></div></div>""", unsafe_allow_html=True)
+        if len(non_giocate)==0 and is_admin:
+            if st.button("🏁 CHIUDI FASE LEAGUE E GENERA TABELLONE LIVE", type="primary", use_container_width=True):
+                classif_finale=classifica_calc()
+                num_A=st.session_state.config["num_fascia_A"]
+                champ=classif_finale[:num_A]
+                europa=classif_finale[num_A:]
+                st.session_state.ko_champions=crea_ko_iniziale(champ)
+                st.session_state.ko_europa=crea_ko_iniziale(europa)
+                st.session_state.phase="knockout"
+                salva(); st.rerun()
+    with col_class:
+        st.markdown("### 📊 CLASSIFICA LIVE")
+        for idx,t in enumerate(classif):
+            if idx<8: fascia="top8"; label="🔵 DIRETTA OTTAVI"
+            elif idx<st.session_state.config["num_fascia_A"]: fascia="playoff"; label="🟡 PLAYOFF"
+            else: fascia="europa"; label="🟠 EUROPA"
+            star="⭐" if mio_team and t["id"]==mio_team["id"] else ""
+            st.markdown(f"""<div class="classifica-row {fascia}"><div><span style="font-family:Orbitron; font-weight:800; color:#c9a86a; margin-right:5px;">{idx+1}</span><span style="font-weight:800; font-size:0.84em;">{star} {t['nome']}</span><div style="font-size:0.62em; color:#6ea8ff;">{label} • {t['giocate']}/{st.session_state.config['partite_per_coppia']} • {t['punti']} PT</div></div><div style="text-align:right; font-size:0.78em;"><div>GF {t['gf']} GS {t['gs']}</div><div style="color:{'#00ff88' if t['diff']>=0 else '#ff4444'};">Diff {t['diff']:+d}</div></div></div>""", unsafe_allow_html=True)
+
+# ===================== FASE KNOCKOUT LIVE =====================
+if st.session_state.phase=="knockout":
+    st.markdown("## 🏆 TABELLONE LIVE - CHAMPIONS & EUROPA")
+    # Avanza automaticamente se una fase è finita
+    if st.session_state.ko_champions:
+        st.session_state.ko_champions=avanza_ko(st.session_state.ko_champions)
+    if st.session_state.ko_europa:
+        st.session_state.ko_europa=avanza_ko(st.session_state.ko_europa)
+    salva()
+
+    tabC, tabE = st.tabs(["⭐ CHAMPIONS LEAGUE LIVE - FASCIA A", "🟠 EUROPA LEAGUE LIVE - FASCIA B"])
+
+    with tabC:
+        ko=st.session_state.ko_champions
+        if not ko:
+            st.warning("Nessun tabellone Champions")
+        else:
+            st.markdown(f"### 🔴 LIVE: Fase attuale: **{ko['fase_attuale']}**")
+            # Mostra partite live della fase attuale con biliardini
+            live_now = assegna_biliardini_ko(ko, st.session_state.config["num_biliardini"], 0)
+            # Assegna biliardino numeri
+            for i,m in enumerate([mm for mm in live_now if not mm["giocata"]][:st.session_state.config["num_biliardini"]]): m["biliardino"]=f"TAV {i+1}"
+            for m in [mm for mm in live_now if not mm["giocata"]][st.session_state.config["num_biliardini"]:]: m["biliardino"]="CODA"
+
+            # La mia partita knockout
+            mio_nome=st.session_state.giocatore
+            if live_now:
+                # Filtra per me
+                if mio_nome!="ADMIN":
+                    mie_ko=[m for m in live_now if not m["giocata"] and (m["teamA"]["nome"]==mio_nome or m["teamB"]["nome"]==mio_nome)]
+                else:
+                    mie_ko=[m for m in live_now if not m["giocata"]][:1]
+                if mie_ko:
+                    st.markdown("### ⭐ LA TUA PARTITA KNOCKOUT LIVE")
+                    ui_segna_ko(mie_ko[0], f"CHAMPIONS {ko['fase_attuale']}")
+
+            st.divider()
+            # Visualizzazione bracket completo live
+            for stage in ["PLAYOFF","OTTAVI","QUARTI","SEMI","FINALE"]:
+                matches=[]
+                if stage=="PLAYOFF": matches=ko["playoff"]
+                elif stage=="OTTAVI": matches=ko["ottavi"]
+                elif stage=="QUARTI": matches=ko["quarti"]
+                elif stage=="SEMI": matches=ko["semi"]
+                elif stage=="FINALE": matches=[ko["finale"]] if ko["finale"] else []
+                if not matches: continue
+                st.markdown(f"<div class='ko-stage-title'>{stage} {'🔴 LIVE' if ko['fase_attuale']==stage else '✅' if all(m['giocata'] for m in matches) else '⏳'}</div>", unsafe_allow_html=True)
+                cols=st.columns(2)
+                for i,m in enumerate(matches):
+                    vinc = m.get("vincitore")
+                    stato = f"✅ {vinc['nome']} vince {m['golA']}-{m['golB']}" if m["giocata"] else f"🔴 LIVE TAV {m.get('biliardino','?')}" if m.get("biliardino") and "TAV" in str(m.get("biliardino")) else "⏳ IN CODA" if not m["giocata"] else ""
+                    cols[i%2].markdown(f"""
+                    <div class="ko-match {'ko-match-winner' if m['giocata'] else ''}">
+                        <div style="display:flex; justify-content:space-between; font-size:0.7em; color:#c9a86a;"><span>{m['id']}</span><span>{stato}</span></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                            <span class="team-name" style="color:{'#00ff88' if vinc and vinc['nome']==m['teamA']['nome'] else '#eaf2ff'};">{m['teamA']['nome']}</span>
+                            <span style="font-family:Orbitron; font-weight:900; color:#fff;">{f"{m['golA']}-{m['golB']}" if m['giocata'] else "vs"}</span>
+                            <span class="team-name" style="color:{'#00ff88' if vinc and vinc['nome']==m['teamB']['nome'] else '#eaf2ff'};">{m['teamB']['nome']}</span>
                         </div>
                     </div>
-                """, unsafe_allow_html=True)
-            else:
-                card_style_class = "pro-match-card-last" if (is_ultima and is_personale) else "pro-match-card"
-                if is_ultima and is_personale:
-                    st.markdown(f"""<div class="pro-last-match-banner">⚠️ ULTIMA PARTITA TURNO N° {st.session_state.round_number}</div>""", unsafe_allow_html=True)
-                
-                st.markdown(f"""
-                    <div class="{card_style_class}">
-                        <div class="match-header-row">
-                            <span class="biliardino-title">🏟️ BILIARDINO {biliardino_num}</span>
-                            <span class="turno-badge">TURNO {st.session_state.round_number}</span>
-                        </div>
-                        <div class="match-teams-row">
-                            <div class="team-box">🥅 {tA_port['name'].upper()} / ⚽️ {tA_att['name'].upper()}</div>
-                            <div class="vs-badge">VS</div>
-                            <div class="team-box">🥅 {tB_port['name'].upper()} / ⚽️ {tB_att['name'].upper()}</div>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-            
-            nome_coppia_a = f"{tA_port['name'].upper()} & {tA_att['name'].upper()}"
-            nome_coppia_b = f"{tB_port['name'].upper()} & {tB_att['name'].upper()}"
+                    """, unsafe_allow_html=True)
+            if ko.get("vincitore"):
+                st.balloons()
+                st.markdown(f"<div class='hero-champions' style='border-color:#00ff88;'><div class='hero-title'>🏆 CAMPIONE CHAMPIONS: {ko['vincitore']['nome']} 🏆</div></div>", unsafe_allow_html=True)
 
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button(f"⚡ VITTORIA: {nome_coppia_a}", key=f"wa_{st.session_state.round_number}_{idx}", use_container_width=True):
-                    salva_snapshot()
-                    perdenti_turno = [tB_att, tB_port]
-                    for v in [tA_att, tA_port]: v["last_result"] = 'W'
-                    for per in perdenti_turno:
-                        per["last_result"] = 'L'
-                        per["lives"] = max(0, per["lives"] - 1)
-                        if per["lives"] == 0: per["eliminated"] = True
-                    
-                    periti_nomi = [p['name'] for p in perdenti_turno if p['lives'] == 0]
-                    perdita_vite_nomi = [p['name'] for p in perdenti_turno]
-                    
-                    if "turno_report_log" not in st.session_state or st.session_state.turno_report_log["turno"] != st.session_state.round_number:
-                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
-                    
-                    st.session_state.turno_report_log["vite_perse"].extend(perdita_vite_nomi)
-                    st.session_state.turno_report_log["eliminati"].extend(periti_nomi)
-
-                    st.session_state.current_round_matches["partite"].pop(idx)
-                    salva_stato()
-                    st.rerun()
-
-            with c2:
-                if st.button(f"⚡ VITTORIA: {nome_coppia_b}", key=f"wb_{st.session_state.round_number}_{idx}", use_container_width=True):
-                    salva_snapshot()
-                    perdenti_turno = [tA_att, tA_port]
-                    for v in [tB_att, tB_port]: v["last_result"] = 'W'
-                    for per in perdenti_turno:
-                        per["last_result"] = 'L'
-                        per["lives"] = max(0, per["lives"] - 1)
-                        if per["lives"] == 0: per["eliminated"] = True
-                    
-                    periti_nomi = [p['name'] for p in perdenti_turno if p['lives'] == 0]
-                    perdita_vite_nomi = [p['name'] for p in perdenti_turno]
-                    
-                    if "turno_report_log" not in st.session_state or st.session_state.turno_report_log["turno"] != st.session_state.round_number:
-                        st.session_state.turno_report_log = {"turno": st.session_state.round_number, "vite_perse": [], "eliminati": []}
-                    
-                    st.session_state.turno_report_log["vite_perse"].extend(perdita_vite_nomi)
-                    st.session_state.turno_report_log["eliminati"].extend(periti_nomi)
-
-                    st.session_state.current_round_matches["partite"].pop(idx)
-                    salva_stato()
-                    st.rerun()
-
-        if partite_in_coda and not is_personale:
-            st.markdown("### 📢 PROSSIMI IN CODA:")
-            for q_idx, q_match in enumerate(partite_in_coda):
-                qa, qp = q_match["teamA"]
-                qb, qpp = q_match["teamB"]
-                st.markdown(f"""
-                    <div class="pro-queue-card">
-                        <div class="match-header-row">
-                            <span class="biliardino-title" style="color: #00f3ff; text-shadow: none;">⏳ IN CODA</span>
-                            <span class="turno-badge" style="border-color: #00f3ff; color: #00f3ff; box-shadow: none;">TURNO {st.session_state.round_number}</span>
-                        </div>
-                        <div class="match-teams-row" style="background: #041217; border-color: rgba(0, 243, 255, 0.3);">
-                            <div class="team-box">🥅 {qp['name'].upper()} / ⚽️ {qa['name'].upper()}</div>
-                            <div class="vs-badge" style="color: #00f3ff; text-shadow: none;">VS</div>
-                            <div class="team-box">🥅 {qpp['name'].upper()} / ⚽️ {qb['name'].upper()}</div>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-if st.session_state.players:
-    st.markdown("### 📊 CLASSIFICHE IN TEMPO REALE")
-    col_c1, col_c2 = st.columns(2)
-    with col_c1:
-        st.markdown("""<div class="pro-rank-container"><div class="pro-rank-header">🥅 CLASSIFICA PORTIERI</div>""", unsafe_allow_html=True)
-        for p in [x for x in st.session_state.players if x["role"] == "portiere"]:
-            css = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
-            n_css = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
-            if "max_lives" not in p:
-                p["max_lives"] = max(p["lives"], st.session_state.initial_lives)
-            vite_attive = "🟢 " * p["lives"]
-            vite_perse = "🔴 " * (p["max_lives"] - p["lives"])
-            pallini_str = vite_attive + vite_perse
-            st.markdown(f"""<div class="{css}"><span class="{n_css}">{p['name']}</span><span>{pallini_str}</span></div>""", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    with col_c2:
-        st.markdown("""<div class="pro-rank-container"><div class="pro-rank-header">⚽️ CLASSIFICA ATTACCANTI</div>""", unsafe_allow_html=True)
-        for p in [x for x in st.session_state.players if x["role"] == "attaccante"]:
-            css = "pro-player-row pro-player-row-eliminated" if p["eliminated"] else "pro-player-row"
-            n_css = "pro-rank-name-eliminated" if p["eliminated"] else "pro-rank-name"
-            if "max_lives" not in p:
-                p["max_lives"] = max(p["lives"], st.session_state.initial_lives)
-            vite_attive = "🟢 " * p["lives"]
-            vite_perse = "🔴 " * (p["max_lives"] - p["lives"])
-            pallini_str = vite_attive + vite_perse
-            st.markdown(f"""<div class="{css}"><span class="{n_css}">{p['name']}</span><span>{pallini_str}</span></div>""", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+    with tabE:
+        ko=st.session_state.ko_europa
+        if not ko or (not ko["playoff"] and not ko["ottavi"]):
+            st.info("Nessuna squadra in Europa League - aumenta le coppie o riduci Fascia A")
+        else:
+            st.markdown(f"### 🔴 LIVE EUROPA: {ko['fase_attuale']}")
+            live_now = assegna_biliardini_ko(ko, st.session_state.config["num_biliardini"], 0)
+            for i,m in enumerate([mm for mm in live_now if not mm["giocata"]][:st.session_state.config["num_biliardini"]]): m["biliardino"]=f"TAV {i+1}"
+            mio_nome=st.session_state.giocatore
+            if live_now:
+                if mio_nome!="ADMIN":
+                    mie_ko=[m for m in live_now if not m["giocata"] and (m["teamA"]["nome"]==mio_nome or m["teamB"]["nome"]==mio_nome)]
+                else:
+                    mie_ko=[m for m in live_now if not m["giocata"]][:1]
+                if mie_ko:
+                    st.markdown("### ⭐ LA TUA PARTITA EUROPA LEAGUE LIVE")
+                    ui_segna_ko(mie_ko[0], f"EUROPA {ko['fase_attuale']}")
+            for stage in ["PLAYOFF","OTTAVI","QUARTI","SEMI","FINALE"]:
+                matches=[]
+                if stage=="PLAYOFF": matches=ko["playoff"]
+                elif stage=="OTTAVI": matches=ko["ottavi"]
+                elif stage=="QUARTI": matches=ko["quarti"]
+                elif stage=="SEMI": matches=ko["semi"]
+                elif stage=="FINALE": matches=[ko["finale"]] if ko["finale"] else []
+                if not matches: continue
+                st.markdown(f"<div class='ko-stage-title'>{stage} EUROPA {'🔴 LIVE' if ko['fase_attuale']==stage else ''}</div>", unsafe_allow_html=True)
+                cols=st.columns(2)
+                for i,m in enumerate(matches):
+                    vinc=m.get("vincitore")
+                    stato=f"✅ {vinc['nome']}" if m["giocata"] else "🔴 LIVE" if m.get("biliardino") else "⏳"
+                    cols[i%2].markdown(f"<div class='ko-match {'ko-match-winner' if m['giocata'] else ''}'><div style='font-size:0.7em; color:#ff8c42;'>{m['id']} {stato}</div><div style='display:flex; justify-content:space-between;'><span class='team-name'>{m['teamA']['nome']}</span><span>{f"{m['golA']}-{m['golB']}" if m['giocata'] else 'vs'}</span><span class='team-name'>{m['teamB']['nome']}</span></div></div>", unsafe_allow_html=True)
+            if ko.get("vincitore"):
+                st.balloons()
+                st.markdown(f"<div class='hero-champions' style='border-color:#ff8c42;'><div class='hero-title'>🏆 CAMPIONE EUROPA LEAGUE: {ko['vincitore']['nome']} 🏆</div></div>", unsafe_allow_html=True)
